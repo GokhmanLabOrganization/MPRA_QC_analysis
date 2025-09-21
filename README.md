@@ -16,12 +16,12 @@ It is designed for researchers who want a ready-to-use, reproducible framework f
 ---
 
 ## 📂 Repository Structure
-├── notebooks/
-│ └── analysis_notebook.ipynb # Main Jupyter notebook
-├── scripts/ # Helper scripts for preprocessing and analysis
-├── data/ # Input data (not included in repo)
+├── .pre-commit-config.yaml # for uploading to git without execution
+├── Association_analysis.ipynb
+├── activity_analysis.ipynb
 ├── results/ # Example outputs
 ├── environment.yml # Conda environment file
+├── const.py # Definitions and paths for running the notebooks
 └── README.md # Project documentation
 
 ---
@@ -43,10 +43,8 @@ conda activate new_env
 ```
 ## ▶️ Usage
 
-Start Jupyter and open the analysis notebook:
-```bash
-jupyter notebook notebooks/analysis_notebook.ipynb
-```
+Start Jupyter and open the notebooks
+
 ## Contributing – Notebook Cleanliness
 
 This repository uses [**pre-commit**](https://pre-commit.com/) with [**nbstripout**](https://github.com/kynan/nbstripout)  
@@ -62,7 +60,7 @@ pre-commit install
 On every git commit, notebook outputs and execution counts are stripped automatically.
 
 If pre-commit reports that files were modified:
-
+```bash
 git add <file>
 
 git commit -m "Clean notebooks"
@@ -72,6 +70,7 @@ Manual clean (optional)
 Strip all notebooks at once:
 
 pre-commit run --all-files
+```
 
 ## 🙌 Acknowledgments
 
