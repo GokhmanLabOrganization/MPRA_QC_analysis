@@ -110,7 +110,15 @@ MPRA_data_paths = {
         "supplementary":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/media-4.xlsx",
         "cDNA_reads_by_cell_type":
-        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/july24.count" 
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/july24.count",
+         "association_before_promiscuity":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/before_prom_df.csv",
+        "association_before_minimum_associations":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/before_min_assoc_df.csv",
+        "association_final":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/final_df.csv",
+        "oligo_fasta":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/MPRA_oligo_pool_seq_renamed_without_adapters_v2.fa"
     },
     "PMID_38766054_Reilly": {
         "comb_df": 
@@ -123,7 +131,13 @@ MPRA_data_paths = {
         "oligo_fasta":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/QC_ready/ENCFF715XTT.fasta",
         "supplementary":
-        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/media-9.xlsx"
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/media-9.xlsx",
+        "association_before_promiscuity":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/before_prom_df.csv",
+        "association_before_minimum_associations":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/before_min_assoc_df.csv",
+        "association_final":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/final_df.csv"
     },
     "humanMPRA_L3a2": {
         "comb_df": 
@@ -557,20 +571,12 @@ MPRA_data_paths = {
         "association_output":
        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/oligos_to_barcodes_comb_L4a2_30_2.txt",
          
-        "association_before_filtering":
-        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/before_filtering.csv",
-        
-        "association_after_quality":
-        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/after_quality.csv",
-        
-        "association_after_barcode":
-        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/after_barcode_filter.csv",
-        
-        "association_after_promiscuity":
-        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/after_promiscuity_filter.csv",
-        
-        "association_after_associations":
-                        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/after_associations_filter.csv",
+        "association_before_promiscuity":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/before_prom_df.csv",
+        "association_before_minimum_associations":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/before_min_assoc_df.csv",
+        "association_final":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Max_MPRA/run2/output/DNA_barcode_associations_2/final_df.csv",
     
        "comb_df":
         "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/Max293T/run2/output/activity_after_filter/comb_df_adjusted_fdr.csv",
