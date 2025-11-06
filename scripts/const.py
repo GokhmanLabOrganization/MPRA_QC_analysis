@@ -68,7 +68,7 @@ def save_fig(fig,name,path):
     """
     fig.savefig(f"{path}/{name}.png", dpi=500,bbox_inches='tight') # bbxox argument added by Omer to fit the plot to size 15/04
     fig.savefig(f"{path}/{name}.eps", dpi=500,bbox_inches='tight') # increasd DPI to 500 NM 19/09
-
+    fig.savefig(f"{path}/{name}.pdf", dpi=500,bbox_inches='tight') 
 
 def set_equal_plot_limits(x, y): 
     """
