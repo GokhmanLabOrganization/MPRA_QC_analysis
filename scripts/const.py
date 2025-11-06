@@ -49,6 +49,7 @@ def set_plot_style():
         'xtick.labelsize': FONT_SIZE_small,
         'ytick.labelsize': FONT_SIZE_small,
         'legend.fontsize': FONT_SIZE_small,
+        'legend.title_fontsize': FONT_SIZE_small,
         'axes.labelweight': 'bold',
 #        'font.family': FONT_FAMILY, # TODO: change font
         'axes.linewidth': 1.0,
