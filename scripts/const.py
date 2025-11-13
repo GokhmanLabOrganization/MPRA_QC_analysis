@@ -444,13 +444,15 @@ MPRA_data_paths = {
     "/home/labs/davidgo/Collaboration/ArchaicDerivedMPRA/activity_data/npc_AH_comb_df_adjusted_fdr.csv", #NM 14.05
         
         "oligo_fasta":
-        "/home/labs/davidgo/nitzanha/methMPRA/main/oligo_fasta/AH_no_adapters.fasta", #NM 14.05
+        "/home/labs/davidgo/Collaboration/archaicMPRA_raw/Ryder/association/AH/archaic_derived_mpra_oligos.fa", #NM 14.05
     
         "activity_per_rep": 
     "/home/labs/davidgo/Collaboration/ArchaicDerivedMPRA/activity_data/ratio_wo_outliers_std2.csv",
 
         "UMI_counts": 
-    "/home/labs/davidgo/Collaboration/ArchaicDerivedMPRA/activity_data/UMI_exploded_std2_filter.txt",        
+    "/home/labs/davidgo/Collaboration/ArchaicDerivedMPRA/activity_data/UMI_exploded_std2_filter.txt",
+        
+        'association_final':"/home/labs/davidgo/Collaboration/archaicMPRA_raw/Ryder/association/AH/comb_output/final_df.csv"
     }, 
     
     "methMPRA": {
