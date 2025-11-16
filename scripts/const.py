@@ -138,7 +138,11 @@ MPRA_data_paths = {
         "association_before_minimum_associations":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/before_min_assoc_df.csv",
         "association_final":
-        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/final_df.csv"
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/final_df.csv",
+        "screen_df":  
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/screen_df.csv",
+        "tss_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/PMID_38766054_Reilly/QC_ready/tss_distance_df.csv"
     },
     "humanMPRA_L3a2": {
         "comb_df": 
