@@ -433,14 +433,21 @@ MPRA_data_paths = {
             "full_quant_osteoblasts": 
         "/home/labs/davidgo/Collaboration/RepCarlyClean/output/Hob_results_full_quantitative_nobc_fdr.txt",
             "different_std_threshold_analysis":
-        "/home/labs/davidgo/Collaboration/RepCarlyClean/output/UMI/filted_std2_std3_combined_for_QC_pipeline.txt"
+        "/home/labs/davidgo/Collaboration/RepCarlyClean/output/UMI/filted_std2_std3_combined_for_QC_pipeline.txt",
+        
+        "downsampling_activity_path":
+        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/Hob/"
+        
     },    "modern_humanMPRA_NPC":{
             "comb_df": 
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/mh_MPRA_activity_df_NPC.csv",
              "oligo_fasta":
         "/home/labs/davidgo/Collaboration/ReproducingCarly/input/additional/Oligos_library_joint_noDups.fasta",
             "full_quant_NPCs": 
-        "/home/labs/davidgo/Collaboration/RepCarlyClean/output/NPC_results_full_quantitative_nobc_fdr.txt"
+        "/home/labs/davidgo/Collaboration/RepCarlyClean/output/NPC_results_full_quantitative_nobc_fdr.txt",
+        
+        "downsampling_activity_path":
+        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/NPC/"
 
     }, 
     
@@ -760,5 +767,7 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/filter/ratio_wo_outliers_std2.csv"
         
     }
+    
+    
 }
     
