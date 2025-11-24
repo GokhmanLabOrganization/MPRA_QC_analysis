@@ -436,7 +436,10 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/RepCarlyClean/output/UMI/filted_std2_std3_combined_for_QC_pipeline.txt",
         
         "downsampling_activity_path":
-        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/Hob/"
+        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/Hob/",
+        
+        "comparative_res":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/comparative_df_Hob.csv"
         
     },    "modern_humanMPRA_NPC":{
             "comb_df": 
@@ -764,7 +767,10 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/comb_df_adjusted_fdr.csv",
             
         "activity_per_rep": 
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/filter/ratio_wo_outliers_std2.csv"
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/filter/ratio_wo_outliers_std2.csv",
+        
+        "comparative_res":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/mpranalyze_comparative_old/comparative_df.csv"
         
     }
     
