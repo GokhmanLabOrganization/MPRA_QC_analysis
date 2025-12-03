@@ -438,6 +438,9 @@ MPRA_data_paths = {
         "downsampling_activity_path":
         "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/Hob/",
         
+        "downsampling_ratio_path":
+        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/filter/downsampling/Hob/",
+        
         "comparative_res":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/comparative_df_Hob.csv"
         
