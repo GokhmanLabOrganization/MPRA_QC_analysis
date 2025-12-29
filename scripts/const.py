@@ -181,7 +181,7 @@ MPRA_data_paths = {
         "association_after_associations":
         "/home/labs/davidgo/Collaboration/L4_MPRA/Chondrocyte/L3a2/output/DNA_barcode_associations_2/after_associations_filter.csv",
         
-        "comparative_res":
+        "comparative_df":
         "/home/labs/davidgo/Collaboration/humanMPRA/chondrocytes/L3a2/output/mpranalyze_comparative/mpranalyze_comp_res_filter_sorted.txt",
         "association_final":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a2/output/DNA_barcode_associations_2/final_df.csv"
@@ -466,7 +466,7 @@ MPRA_data_paths = {
         "downsampling_ratio_path":
         "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/filter/downsampling/Hob/",
         
-        "comparative_res":
+        "comparative_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/comparative_df_Hob.csv",
         
         "AI_df":
@@ -805,7 +805,7 @@ MPRA_data_paths = {
         "activity_per_rep": 
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/filter/ratio_wo_outliers_std2.csv",
         
-        "comparative_res":
+        "comparative_df":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/mpranalyze_comparative_old/comparative_df.csv",
         
         "AI_df":
