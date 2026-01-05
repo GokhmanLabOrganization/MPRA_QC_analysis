@@ -472,6 +472,9 @@ MPRA_data_paths = {
         "AI_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/AI_pred_df.csv",
         
+        "allelic_pairs_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/allelic_pairs_df.csv",
+        
     },    "modern_humanMPRA_NPC":{
             "comb_df": 
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/mh_MPRA_activity_df_NPC.csv",
@@ -664,6 +667,9 @@ MPRA_data_paths = {
         
         "downsampling_ratio_path":
         "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/Max293T/run2/output/filter/downsampling/",
+        
+        "allelic_pairs_df":
+        "/home/labs/davidgo/Collaboration/other_MPRAs/Max_MPRA/Max293T/run2/output/activity_after_filter/allelic_pairs_df.csv",
                     },
             
         
