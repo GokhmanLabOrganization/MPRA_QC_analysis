@@ -471,6 +471,8 @@ MPRA_data_paths = {
         
         "AI_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/AI_pred_df.csv",
+        "AI_comparative_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/AI_pred_df.csv",
         
         "allelic_pairs_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/allelic_pairs_df.csv",
@@ -823,6 +825,10 @@ MPRA_data_paths = {
         
         "AI_df":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/AI_pred_df.csv",
+        
+        "AI_comparative_df":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/AI_pred_comparative_df.csv",
+        
         
         
     }
