@@ -415,26 +415,7 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a3/output/DNA_barcode_associations_2/final_df.csv"
     },
 
-          
-    
-    "humanMPRA_L1a1_Neurons":{
-            "comb_df": 
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/comb_df_adjusted_fdr.csv",
-            
-        "activity_per_rep": 
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/filter/ratio_wo_outliers_std2.csv",
-            
-        "oligo_fasta":
-        "/home/labs/davidgo/Collaboration/humanMPRA/oligo_fasta/L1a1.fasta",
-        
-        "comp_res_filter":
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/mpranalyze_comparative_old/mpranalyze_comp_res_filter.txt",
-
-        "UMI_counts":
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a2/output/UMI/UMI_complexity_for_QC_pipeline.txt",
-        
-        
-    },  
+ 
     "modern_humanMPRA":{ # Mostly Depracted! I keep it just for legacy. Replaced by  NM 13-09 
             "comb_df": 
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/mh_MPRA_activity_df_Hob.csv",
@@ -811,6 +792,7 @@ MPRA_data_paths = {
     "humanMPRA_L1a1_Neurons": {
         "screen_df":  
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/screen_df.csv",
+        
         "tss_df":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/distance_df.csv",
         
@@ -828,6 +810,15 @@ MPRA_data_paths = {
         
         "AI_comparative_df":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/AI_pred_comparative_df.csv",
+            
+        "oligo_fasta":
+        "/home/labs/davidgo/Collaboration/humanMPRA/oligo_fasta/L1a1.fasta",
+        
+        "comp_res_filter":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/mpranalyze_comparative_old/mpranalyze_comp_res_filter.txt",
+
+        "UMI_counts":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a2/output/UMI/UMI_complexity_for_QC_pipeline.txt",
         
         
         
