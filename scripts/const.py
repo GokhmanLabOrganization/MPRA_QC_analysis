@@ -820,6 +820,9 @@ MPRA_data_paths = {
         "UMI_counts":
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a2/output/UMI/UMI_complexity_for_QC_pipeline.txt",
         
+        "downsampling_activity_path":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/downsampling/"
+        
         
         
     }
