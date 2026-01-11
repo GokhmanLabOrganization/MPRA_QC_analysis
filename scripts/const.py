@@ -122,7 +122,9 @@ MPRA_data_paths = {
         "association_final":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/final_df.csv",
         "oligo_fasta":
-        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/MPRA_oligo_pool_seq_renamed_without_adapters_v2.fa"
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/MPRA_oligo_pool_seq_renamed_without_adapters_v2.fa",
+        "cell_types_df":
+        '/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/thylacine biorxiv Gallego Romero/QC_ready/cell_types_df.csv'
     },
     "PMID_38766054_Reilly": {
         "comb_df": 
@@ -458,6 +460,9 @@ MPRA_data_paths = {
         "allelic_pairs_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/allelic_pairs_df.csv",
         
+        "cell_types_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/cell_types_df_ost_esc.csv",
+        
     },    "modern_humanMPRA_NPC":{
             "comb_df": 
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/mh_MPRA_activity_df_NPC.csv",
@@ -470,7 +475,9 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/activity_after_filter/downsampling/NPC/",
         
         "downsampling_ratio_path":
-        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/filter/downsampling/NPC/"
+        "/home/labs/davidgo/Collaboration/ReproducingCarly/outputs/filter/downsampling/NPC/",
+        "cell_types_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/cell_types_df_npc_ost.csv",
 
     }, 
     
@@ -821,7 +828,10 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L3a2/output/UMI/UMI_complexity_for_QC_pipeline.txt",
         
         "downsampling_activity_path":
-        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/downsampling/"
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/downsampling/",
+        
+        "cell_types_df":
+        "/home/labs/davidgo/Collaboration/humanMPRA/neurons/L1a1/output/activity_after_filter/cell_types_df.csv",
         
         
         
