@@ -460,6 +460,8 @@ MPRA_data_paths = {
         "allelic_pairs_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/allelic_pairs_df.csv",
         
+        "allelic_pairs_replicates_df":
+        "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/allelic_pairs_replicates_df.csv",
         "cell_types_df":
         "/home/labs/davidgo/Collaboration/USEFUL_DATASETS/Expression/MPRAs/Modern human derived MPRA/formatted_for_MPRA_QC_pipeline/cell_types_df_ost_esc.csv",
         
@@ -628,7 +630,10 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/L4_MPRA/OsteoblastPrev/L4a2/output/DNA_barcode_associations_2/after_promiscuity_filter.csv",
         
         "association_after_associations":
-        "/home/labs/davidgo/Collaboration/L4_MPRA/OsteoblastPrev/L4a2/output/DNA_barcode_associations_2/after_associations_filter.csv"
+        "/home/labs/davidgo/Collaboration/L4_MPRA/OsteoblastPrev/L4a2/output/DNA_barcode_associations_2/after_associations_filter.csv",
+        
+        "allelic_pairs_replicates_df":
+        "/home/labs/davidgo/Collaboration/humanMPRA/chondrocytes/L4a2/output/filter/allelic_pairs_replicates_df.csv"
     },
     
     "Max_MPRA_run2":{        
