@@ -633,7 +633,10 @@ MPRA_data_paths = {
         "/home/labs/davidgo/Collaboration/L4_MPRA/OsteoblastPrev/L4a2/output/DNA_barcode_associations_2/after_associations_filter.csv",
         
         "allelic_pairs_replicates_df":
-        "/home/labs/davidgo/Collaboration/humanMPRA/chondrocytes/L4a2/output/filter/allelic_pairs_replicates_df.csv"
+        "/home/labs/davidgo/Collaboration/humanMPRA/chondrocytes/L4a2/output/filter/allelic_pairs_replicates_df.csv",
+        
+        "association_final":
+        "/home/labs/davidgo/Collaboration/L4_MPRA/OsteoblastPrev/L4a2/output/DNA_barcode_associations_2/final_df.csv",
     },
     
     "Max_MPRA_run2":{        
