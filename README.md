@@ -2,6 +2,7 @@
 
 This repository contains a reproducible pipeline for analyzing **Massively Parallel Reporter Assay (MPRA)** data.  
 It includes Jupyter notebooks and an environment file to make setup easy.  
+This is currently a **beta** version of the pipeline, some adaptations to your files might be required
 
 ---
 
@@ -21,7 +22,7 @@ It is designed for researchers who want a ready-to-use, reproducible framework f
 │  └─Association_analysis.ipynb
 │  └─const.py # Definitions and paths for running the notebooks
 │  └─Process_for_association_QC.py # Preprocessing association files for the QC pipeline
-├── results/ # Example outputs
+├── output/ # Example outputs
 ├── environment.yml # Conda environment file
 └── README.md # Project documentation
 
