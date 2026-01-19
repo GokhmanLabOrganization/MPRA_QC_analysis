@@ -32,9 +32,6 @@ library_paths = dict(zip(config['file'], config['path']))
 output_path = library_paths["output_path"]
 os.makedirs(output_path, exist_ok=True)
 
-
-
-print('Done!')
                                                  
 
 
@@ -353,16 +350,16 @@ def downsampling_analysis(downsampling_perc_list,total_oligos):
     for p in downsampling_perc_list:
         perc=round(p,1)
         print(perc)
-        path=fr"{library_paths["assoc_downsampling_fname"]}_{perc}.txt"
+        path=fr"{library_paths["assoc_downsampling_path"]}{library_paths["assoc_downsampling_fname"]}_{perc}.txt"
         df=pd.read_csv(path)
         curr_df=downsampling_bc_counts(df)
         curr_df['ds']=perc
         dfs.append(curr_df)
 
     full_downsampling_df=pd.concat(dfs)
-    oligo_coverage=downsampling_df_total.groupby('ds')['bc_counts'].size()/total_oligos
+    oligo_coverage=full_downsampling_df.groupby('ds')['bc_counts'].size()/total_oligos
     coverage_df=pd.DataFrame(data={"ds":oligo_coverage.index.to_list(),"oligo_coverage":oligo_coverage.values})
-    coverage_df['ds']=oligo_coverage_df['ds'].apply(lambda x: str(x))
+    coverage_df['ds']=coverage_df['ds'].apply(lambda x: str(x))
     downsampling_Retained_cCREs_plot(coverage_df)
     downsampling_Barcodes_per_cCRE_plot(full_downsampling_df)
 
@@ -391,25 +388,30 @@ if __name__ == "__main__":
     if "assoc_downsampling_path" in library_paths:
         print("Association downsampling data available")
     
-    feature_dict, oligo_list=feature_dict_creator(fasta_path)
-    counts_df=counts_df_creator(final_df,oligo_list,feature_dict)
-
     
+
     if "oligo_fasta" in library_paths and "association_final" in library_paths:
+        feature_dict, oligo_list=feature_dict_creator(fasta_path)
+        counts_df=counts_df_creator(final_df,oligo_list,feature_dict)
+        print("Creating final plots...")
         BCs_per_cCRE_plot(counts_df)
         Retained_cCREs_plot(counts_df,oligo_list)
         PCR_bias_GC_plot(counts_df)
         PCR_bias_G_stretches_plot(counts_df)
 
     if "association_before_minimum_associations" in library_paths:
+        print("Creating before minimum associations plots...")
         UMIs_per_association_plot(assoc_df)
     
     if "association_before_promiscuity" in library_paths:
+        print("Creating before promiscuity plots...")
         prom_counts_df=barcode_df_counts_creator(before_prom_df)
         cCREs_per_BC_plot(prom_counts_df)
 
     if "assoc_downsampling_path" in library_paths and "oligo_fasta" in library_paths:
+        print("Creating downsampling plots...")
         data_path=library_paths["assoc_downsampling_path"]
         downsampling_perc_list=np.arange(0.1,1.01,0.1)
         n_oligos=oligo_count(fasta_path)
         downsampling_analysis(downsampling_perc_list,n_oligos)
+    print('All done!')
