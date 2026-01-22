@@ -1,27 +1,26 @@
+### Import modules and set plot style
+
 import const
 from const import MPRA_data_paths
 from const import pos_active_ctrl_color,neg_active_ctrl_color,highlight_color,custom_cmap
+from const import plot_color_pallete
+const.set_plot_style()
+
 import pandas as pd
 import os
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
 import numpy as np
 import pysam
-import pickle
 import regex as re
-import collections
-import math
-const.set_plot_style()
-import matplotlib.ticker as ticker
-from const import plot_color_pallete
+import sys
 from scipy.optimize import curve_fit
-import matplotlib.ticker as mticker
-from scipy.stats import gaussian_kde
+
+import matplotlib.pyplot as plt 
+import matplotlib.ticker as ticker 
 from matplotlib.legend_handler import HandlerTuple
 from matplotlib.lines import Line2D
-import matplotlib.ticker as mtick
-import sys
+import seaborn as sns
+
+
 
 config_path=sys.argv[1]
 config = pd.read_csv(config_path,sep='\t')
@@ -33,7 +32,7 @@ output_path = library_paths["output_path"]
 os.makedirs(output_path, exist_ok=True)
 
                                                  
-
+### Define functions
 
 def GC_calc(seq):
     c=seq.count("C")+seq.count("c")
@@ -88,7 +87,9 @@ def feature_dict_creator(fasta_path):
             g_stretch = len(max(re.findall("[Gg]" + '+', entry_seq), key = len,default=""))
             seq_len=len(entry_seq)
             feature_dict[entry.name]=[gc_val,g_stretch,seq_len]
-    return feature_dict, full_oligo_list
+    total_oligos=len(full_oligo_list)
+
+    return feature_dict, full_oligo_list, total_oligos
     
 
 def BCs_per_cCRE_plot(final_counts_df):
@@ -125,10 +126,10 @@ def BCs_per_cCRE_plot(final_counts_df):
         f"Average number of barcodes: {avg:.0f}", color=plot_color_pallete['barcode']
     )
     ax_ecdf.yaxis.set_major_formatter(ticker.FuncFormatter(lambda val, _: f"{val * 100:.0f}%"))
+    print("2_3_BCs_per_cCRE DONE")
+    const.save_fig(plt,"2_3_BCs_per_cCRE", output_path)
 
-    const.save_fig(plt,"BCs_per_cCRE", output_path)
-
-def UMIs_per_association_plot(before_min_assoc_df):
+def Reads_per_association_plot(before_min_assoc_df):
     plt.clf()
     f, ax_hist = plt.subplots()
     bin_width = 0.5
@@ -144,7 +145,8 @@ def UMIs_per_association_plot(before_min_assoc_df):
     ax_hist.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}%"))
     ax_hist.set_xticks([1, 20])
-    const.save_fig(plt,"UMIs_per_association",output_path)
+    print("2_2_Reads_per_association DONE")
+    const.save_fig(plt,"2_2_Reads_per_association",output_path)
 
 
 def Retained_cCREs_plot(final_counts_df,full_oligo_list):
@@ -163,7 +165,8 @@ def Retained_cCREs_plot(final_counts_df,full_oligo_list):
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda val, _: f"{val * 100:.0f}%"))
     ax.set_xlabel("Minimum barcodes per cCRE")
     ax.set_ylim(0,1)
-    const.save_fig(plt,"Retained_cCREs", output_path)
+    print("2_4_Retained_cCREs DONE")
+    const.save_fig(plt,"2_4_Retained_cCREs", output_path)
 
 
 def cCREs_per_BC_plot(promiscuity_counts_df):  
@@ -191,7 +194,8 @@ def cCREs_per_BC_plot(promiscuity_counts_df):
     ax_hist.set_ylabel("barcodes (%)")
     ax_hist.set_ylim(0, 100)   
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}%"))
-    const.save_fig(plt,"cCREs_per_BC",output_path)
+    print("2_1_cCREs_per_BC DONE")
+    const.save_fig(plt,"2_1_cCREs_per_BC",output_path)
 
     
 def PCR_bias_GC_plot(final_counts_df):
@@ -203,11 +207,9 @@ def PCR_bias_GC_plot(final_counts_df):
     bin_df['gc_bin_center'] = bin_df['gc_bin'].apply(lambda x: (float(x.left)+float(x.right)))
     bin_intervals = bin_df['gc_bin'].cat.categories
     bin_edges = [i.left for i in bin_intervals] + [bin_intervals[-1].right]
-    bin_centers = [(i.left + i.right) / 2 for i in bin_intervals]
     bin_widths = [(i.right - i.left)/2 for i in bin_intervals]
 
     # Get bar heights in the same order
-    heights = bin_df.set_index('gc_bin').loc[bin_intervals]['bin_size'].values
     boxplot_df = final_counts_df.copy()
     boxplot_df['gc_bin_center'] = boxplot_df['gc_bin'].apply(lambda x: (float(x.left)+float(x.right))/2)
     boxplot_groups = boxplot_df.groupby('gc_bin_center')['association_count'].apply(list)
@@ -222,7 +224,7 @@ def PCR_bias_GC_plot(final_counts_df):
     ax_hist.set_ylabel("Number of reads")
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
-    ax_hist.xaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
+    ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
     ax2 = ax_hist.twinx()
     ax2.plot(boxplot_groups.index, gc_summary['count'],
             color=plot_color_pallete['cCRE'], marker='o', label='cCRE count')
@@ -233,7 +235,8 @@ def PCR_bias_GC_plot(final_counts_df):
     ax2.tick_params(axis='y', colors=plot_color_pallete['cCRE'])
     ax_hist.spines['right'].set_visible(True)
     f.set_size_inches(8, 8)
-    const.save_fig(plt,"PCR_bias_GC",output_path)
+    print("2_7_PCR_bias_GC DONE")
+    const.save_fig(plt,"2_7_PCR_bias_GC",output_path)
 
 
 def PCR_bias_G_stretches_plot(final_counts_df):    
@@ -277,20 +280,10 @@ def PCR_bias_G_stretches_plot(final_counts_df):
     ax2.tick_params(axis='y', colors=plot_color_pallete['cCRE'])
     ax_hist.spines['right'].set_visible(True)
     f.set_size_inches(8, 8)
-
-    const.save_fig(plt,"PCR_bias_G_stretches",output_path)
+    print("2_8_PCR_bias_G_stretches DONE")
+    const.save_fig(plt,"2_8_PCR_bias_G_stretches",output_path)
 
         
-def oligo_count(fasta_path):
-    fasta_file = pysam.FastxFile(fasta_path)
-    full_oligo_list=set()
-    gc_dict={}
-    for entry in fasta_file:
-        if entry.name not in full_oligo_list:
-            full_oligo_list.add(entry.name)
-    total_oligos=len(full_oligo_list)
-    return total_oligos
-
 def downsampling_Retained_cCREs_plot(oligo_coverage_df):
     x_arr=oligo_coverage_df['ds'].to_numpy(dtype=float)
     y_arr=oligo_coverage_df['oligo_coverage'].to_numpy(dtype=float)
@@ -308,7 +301,7 @@ def downsampling_Retained_cCREs_plot(oligo_coverage_df):
     sc2 = plt.scatter(x_arr, y_arr,color=plot_color_pallete['cCRE'])
     line, = plt.plot(x_fit, y_hill_fit, label='Hill model fit', color='lightgray')
     line2, = plt.plot(x_arr, y_arr, label='Data',color=plot_color_pallete['cCRE'])
-    #plt.yaxis.set_major_formatter(mtick.PercentFormatter())
+    #plt.yaxis.set_major_formatter(ticker.PercentFormatter())
     ax = plt.gca()
     add=y_pred[-6:]-y_arr[-1]
     n = len(x_pred)
@@ -333,16 +326,17 @@ def downsampling_Retained_cCREs_plot(oligo_coverage_df):
     plt.xlabel('Sampling parameter')
     plt.ylabel('Retained cCREs')
     plt.ylim(0,1)
-    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-
-    const.save_fig(plt,"Downsampling_Retained_cCREs",output_path)
+    ax.yaxis.set_major_formatter(ticker.PercentFormatter(xmax=1.0, decimals=0))
+    print("2_5_Downsampling_Retained_cCREs DONE")
+    const.save_fig(plt,"2_5_Downsampling_Retained_cCREs",output_path)
 
 def downsampling_Barcodes_per_cCRE_plot(downsampling_df_total):
     f, ax_box= plt.subplots()
     sns.boxplot(data=downsampling_df_total,y='bc_counts',x='ds',showfliers=False,ax=ax_box,color=plot_color_pallete['barcode'])
     ax_box.set_xlabel("Downsampling parameter")
     ax_box.set_ylabel("Number of Barcodes")
-    const.save_fig(plt,"Downsampling_Barcodes_per_cCRE",output_path)
+    print("2_6_Downsampling_Barcodes_per_cCRE DONE")
+    const.save_fig(plt,"2_6_Downsampling_Barcodes_per_cCRE",output_path)
 
 
 def downsampling_analysis(downsampling_perc_list,total_oligos):
@@ -369,6 +363,8 @@ def downsampling_analysis(downsampling_perc_list,total_oligos):
 
 if __name__ == "__main__":
     #load data
+    print("Loading data...")
+    
     if "oligo_fasta" in library_paths:
         print('loading oligo_fasta...')
         fasta_path = library_paths["oligo_fasta"]
@@ -378,40 +374,35 @@ if __name__ == "__main__":
         final_df = pd.read_csv(library_paths["association_final"],index_col=0)
         
     if "association_before_promiscuity" in library_paths:
-        print('loading before_prom_df...')
-        before_prom_df = pd.read_csv(library_paths["association_before_promiscuity"],index_col=0)
+        print('loading prom_df...')
+        prom_df = pd.read_csv(library_paths["association_before_promiscuity"],index_col=0)
 
     if "association_before_minimum_associations" in library_paths:
-        print('loading before_min_assoc_df...')
+        print('loading assoc_df...')
         assoc_df = pd.read_csv(library_paths["association_before_minimum_associations"],index_col=0)
 
     if "assoc_downsampling_path" in library_paths:
         print("Association downsampling data available")
     
-    
+    print("Creating plots...")
 
     if "oligo_fasta" in library_paths and "association_final" in library_paths:
-        feature_dict, oligo_list=feature_dict_creator(fasta_path)
+        feature_dict, oligo_list, n_oligos=feature_dict_creator(fasta_path)
         counts_df=counts_df_creator(final_df,oligo_list,feature_dict)
-        print("Creating final plots...")
         BCs_per_cCRE_plot(counts_df)
         Retained_cCREs_plot(counts_df,oligo_list)
         PCR_bias_GC_plot(counts_df)
         PCR_bias_G_stretches_plot(counts_df)
 
     if "association_before_minimum_associations" in library_paths:
-        print("Creating before minimum associations plots...")
-        UMIs_per_association_plot(assoc_df)
+        Reads_per_association_plot(assoc_df)
     
     if "association_before_promiscuity" in library_paths:
-        print("Creating before promiscuity plots...")
-        prom_counts_df=barcode_df_counts_creator(before_prom_df)
+        prom_counts_df=barcode_df_counts_creator(prom_df)
         cCREs_per_BC_plot(prom_counts_df)
 
     if "assoc_downsampling_path" in library_paths and "oligo_fasta" in library_paths:
-        print("Creating downsampling plots...")
         data_path=library_paths["assoc_downsampling_path"]
         downsampling_perc_list=np.arange(0.1,1.01,0.1)
-        n_oligos=oligo_count(fasta_path)
         downsampling_analysis(downsampling_perc_list,n_oligos)
     print('All done!')
