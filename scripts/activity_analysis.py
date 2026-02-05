@@ -214,7 +214,7 @@ def melt_df(df):
     return results_melted_df
 
 def plot_retained_cCREs_and_barcodes(result_melted_df):
-
+    plt.clf()
 
     print('NOTE: need to fix the x axis in illustrator')
     # Clean measurement name
@@ -350,9 +350,9 @@ def plot_activity_distribution(act_df):
 
 
     const.save_fig(plt,'activity_distribution',output_path)
-    plt.show()
 
 def plot_p_value_distribution(act_df):
+    plt.clf()
     # Drop NAs and sort p-values
     pvals = act_df['pval.mad'].dropna().sort_values().to_numpy()
     n = len(pvals)
@@ -374,9 +374,9 @@ def plot_p_value_distribution(act_df):
 
     const.save_fig(plt,'P_value_distribution',output_path)
 
-    plt.show()
 
 def plot_activity_downsampling(ds_path):
+    plt.clf()
     act_perc_list=[]
     downsampling_perc_list=np.arange(0.1,1.01,0.1)
     for p in downsampling_perc_list:
@@ -398,6 +398,7 @@ def plot_activity_downsampling(ds_path):
     const.save_fig(plt,'Activity_downsampling',output_path)
 
 def plot_reproducibility_by_sequencing_depth(ds_activity_path,ds_ratio_path):
+    plt.clf()
     rep_corr_by_act=[]
     rep_corr_list=[]
     downsampling_perc_list=np.arange(0.1,1.01,0.1)
@@ -455,6 +456,7 @@ def plot_cumulative_RNA_reads(act_df):
     const.save_fig(plt,"cumulative_RNA_reads",output_path)
 
 def create_gc_df(act_df,f_file):
+    plt.clf()
     # Initialize empty lists to store modified identifiers and sequences
 
     identifiers = []
@@ -541,7 +543,6 @@ def plot_gc_content_bias(merged_gc_activity):
     ax_hist.set_yticks([yticks_hist[0], yticks_hist[-1]])
 
     const.save_fig(plt,'GC_content_bias_in_DNA',output_path)
-    plt.show()
 
 def plot_ratio_correlation_between_replicates(activity_by_rep):
     # Prepare the data
@@ -582,10 +583,9 @@ def plot_ratio_correlation_between_replicates(activity_by_rep):
 
     const.save_fig(plt, 'RNA_DNA_ratio_correlation_between_replicates_hexbin_w_bar', output_path)
 
-    plt.show()
 
 def plot_Replicability_by_activity(activity_by_rep,act_df):
-    
+    plt.clf()
     merged_df=activity_by_rep.merge(act_df,left_on='oligo',right_on='oligo',how='inner')
     merged_df['activity_adjusted'].value_counts()
 
@@ -596,8 +596,8 @@ def plot_Replicability_by_activity(activity_by_rep,act_df):
 
     df["bin"] = None
     df['mask']=df['activity'].apply(lambda x: True if x=='active' else False)
-    min_non_active=df.loc[~df['mask'],'x'].min()
-    max_non_active=df.loc[~df['mask'],'x'].max()
+    min_non_active=np.nanmin(df.loc[~df['mask'],'x'])
+    max_non_active=np.nanmax(df.loc[~df['mask'],'x'])
     min_active=df.loc[df['mask'],'x'].min()
     max_active=df.loc[df['mask'],'x'].max()
     bins_non_active = np.linspace(np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active)))
@@ -697,7 +697,6 @@ def plot_Replicability_by_activity(activity_by_rep,act_df):
 
     fig.tight_layout()
     const.save_fig(plt,'Replicability_by_activity',output_path)
-    plt.show()
 
 
 def plot_ratio_correlation_with_controls(activity_by_rep,neg,pos):
@@ -903,7 +902,7 @@ def plot_RNA_DNA_ratio_hexbin(act_df):
     const.save_fig(plt,'RNA_DNA_ratio_hexbin_w_bar',output_path)
 
 
-def plot_control_boxplots(act_df,neg,pos,test):
+def plot_control_boxplots(act_df,neg,pos,test,stat_col):
     plt.clf()
     annot_df=act_df.copy()
     annot_df['control_annotation']=None
@@ -916,7 +915,7 @@ def plot_control_boxplots(act_df,neg,pos,test):
     test_color = '#BBA9D2'
     annot_df=annot_df.dropna(subset=['control_annotation'])
 
-    sns.boxplot(data=annot_df, x='control_annotation', y='activity', hue='control_annotation',
+    sns.boxplot(data=annot_df, y='control_annotation', x=stat_col, hue='control_annotation',
                 palette={'PosCtrl':pos_color,'NegCtrl':neg_color,'Test':test_color},
                 showfliers=False)
 
@@ -1056,6 +1055,7 @@ def plot_AI_predictions_vs_differential_activity_hexbin(AI_comparative_pred_df):
     const.save_fig(plt,'AI_predictions_vs_differential_activity_hexbin_w_bar',output_path)
 
 def plot_differential_activity_distribution(comparative_df):
+    plt.clf()
     def round_down(num, dec=0):
         mult = 10 ** dec
         return math.floor(num * mult) / mult
@@ -1493,7 +1493,6 @@ def plot_diff_activity_corr_reps_hexbin(pair_rep_df):
 if __name__ == "__main__":
     #load data
     print("Loading data...")
-        
     if "activity_df" in library_paths:
         print('loading activity_df...')
         activity_df = pd.read_csv(library_paths["activity_df"])
@@ -1562,30 +1561,44 @@ if __name__ == "__main__":
     
     if "control_df" in library_paths:
         print('loading control_df...')
-        control_df=pd.read_csv(library_paths["control_df"])
+        control_df=pd.read_csv(library_paths["control_df"],sep='\t')
         group_dict = (
-        control_df.groupby("group")["name"]
+        control_df.groupby("oligo_type")["oligo_name"]
         .apply(list)
         .to_dict()
       
         )
-        pos_olg = group_dict['POSITIVE_CONTROL']  
-        neg_olg = group_dict['NEGATIVE_CONTROL']
-        test_olg = group_dict['TEST']
+        pos_olg = group_dict['positive_ctrl']  
+        neg_olg = group_dict['negative_ctrl']
+        test_olg = group_dict['test_cCRE']
+    if "ratio_col" in library_paths:
+        ratio_colname=library_paths["ratio_col"]
+    if "stat_col" in library_paths:
+        stat_colname=library_paths["stat_col"]
+    if "logFC_col" in library_paths:
+        logFC_colname=library_paths["logFC_col"]
+    if "FDR_comp_col" in library_paths:
+        FDR_comp_colname=library_paths["FDR_comp_col"]
+    
     
 
     print("Creating plots...")
-
+    
     if "activity_df" in library_paths:
+        print("Plotting activity plots...")
         activity_df = add_normalization_reads(activity_df)
         plot_activity_distribution(activity_df)
         plot_p_value_distribution(activity_df)
         plot_cumulative_RNA_reads(activity_df)
         plot_RNA_DNA_ratio_hexbin(activity_df)
-        plot_control_boxplots(activity_df,neg_olg,pos_olg,test_olg)
-        plot_activity_statistic_vs_count_ratio(activity_df,'ratio_log_filtered_std2','statistic')
+        plot_activity_statistic_vs_count_ratio(activity_df,ratio_colname,stat_colname)
+
+    if "activity_per_rep" in library_paths and "control_df" in library_paths:
+        print("Plotting control boxplots...")
+        plot_control_boxplots(activity_df,neg_olg,pos_olg,test_olg,stat_colname)
     
     if "activity_per_rep" in library_paths and "activity_df" in library_paths:
+        print("Plotting replicability by activity...")
         plot_Replicability_by_activity(activity_by_rep_df,activity_df)
 
     if "oligo_fasta" in library_paths and "activity_df" in library_paths:
@@ -1599,6 +1612,8 @@ if __name__ == "__main__":
         results_melted= melt_df(activity_by_rep_df_vectorized)
         plot_retained_cCREs_and_barcodes(results_melted)
         plot_ratio_correlation_between_replicates(activity_by_rep_df)
+
+    if "activity_per_rep" in library_paths and "control_df" in library_paths:
         plot_ratio_correlation_with_controls(activity_by_rep_df,pos_olg,neg_olg)
 
     if "UMI_counts" in library_paths:  
@@ -1626,14 +1641,9 @@ if __name__ == "__main__":
         plot_AI_predictions_vs_differential_activity_hexbin(AI_comparative_df)
 
     if "comparative_df" in library_paths:
-        plot_differential_activity_volcano(comparative_activity_df, FDR_col='FDR', diff_activity_logFC_col='logFC')
+        plot_differential_activity_volcano(comparative_activity_df, FDR_comp_colname, logFC_colname)
         plot_differential_activity_distribution(comparative_activity_df)
 
-    if downsampling_ratio_path in library_paths:
-        ds_ccre_df,ds_barcode_df=downsampling_preprocessing(downsampling_ratio_path)
-        plot_BC_retention_by_DNA_RNA_sequencing_depth(ds_barcode_df)
-        plot_cCRE_retention_by_DNA_RNA_sequencing_depth(ds_ccre_df) 
-    
     if "allelic_pairs_df" in library_paths:
         plot_allelic_pairs_hexbin(allelic_pairs_df)
 
@@ -1642,6 +1652,11 @@ if __name__ == "__main__":
     
     if "allelic_pairs_replicates_df" in library_paths:
         plot_diff_activity_corr_reps_hexbin(pair_reps_df)
+
+    if "downsampling_ratio_path" in library_paths:
+        ds_ccre_df,ds_barcode_df=downsampling_preprocessing(downsampling_ratio_path)
+        plot_BC_retention_by_DNA_RNA_sequencing_depth(ds_barcode_df)
+        plot_cCRE_retention_by_DNA_RNA_sequencing_depth(ds_ccre_df) 
     
     print('Done!')
 
