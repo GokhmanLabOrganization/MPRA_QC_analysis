@@ -76,8 +76,8 @@ if logScale:
     RNA_counts=RNA_counts+"_log"
 
 m_palette = {
-    'RNA_filtered_std2': 'o',
-    'DNA_filtered_std2': 'D',
+    'RNA': 'o',
+    'DNA': 'D',
 }
 
 
@@ -364,7 +364,7 @@ def plot_activity_downsampling(ds_path):
     for p in downsampling_perc_list:
         perc=round(p,1)
         print(perc)
-        path=fr"{ds_path}/comb_df_adjusted_fdr_{perc}.csv"
+        path=fr"{ds_path}/activity_df_{perc}.csv"
         df=pd.read_csv(path)
         act_perc=(df['activity_status']=='active').sum()/df.shape[0]
         act_perc_list.append(act_perc)
@@ -389,16 +389,16 @@ def plot_reproducibility_by_sequencing_depth(ds_activity_path,ds_ratio_path):
     for p in downsampling_perc_list:
         perc=round(p,1)
         print(perc)
-        rep_path=fr"{ds_ratio_path}/ratio_wo_outliers_std2_{perc}.csv"
-        act_path = fr"{ds_activity_path}/comb_df_adjusted_fdr_{perc}.csv"
+        rep_path=fr"{ds_ratio_path}/ratio_df_{perc}.csv"
+        act_path = fr"{ds_activity_path}/activity_df_{perc}.csv"
         activity_by_rep_df_ds = pd.read_csv(rep_path)
         activity_df_ds=pd.read_csv(act_path)
 
-        merged_df_ds=activity_by_rep_df_ds.merge(activity_df_ds,left_on='cCRE',right_on='cCRE',how='inner')
+        merged_df_ds=activity_by_rep_df_ds.merge(activity_df_ds,left_on='cCRE',right_on='cCRE',how='inner',suffixes=("_rep","_act"))
         merged_df_ds['activity_status'].value_counts()
 
-        x = merged_df_ds['RNA_DNA_ratio_log_rep1']
-        y = merged_df_ds['RNA_DNA_ratio_log_rep2']
+        x = merged_df_ds['RNA_DNA_ratio_log_rep1_rep']
+        y = merged_df_ds['RNA_DNA_ratio_log_rep2_rep']
         act = merged_df_ds['activity_status']
         df = pd.DataFrame({'x': x, 'y': y,'activity':act}).dropna()
         rep_corr_by_act.append(df.groupby('activity').apply(lambda g: pearsonr(g['x'],g['y'])[0],include_groups=False))
@@ -1137,10 +1137,8 @@ def downsampling_preprocessing(ds_ratio_path):
     for p in downsampling_perc_list:
         perc=round(p,1)
         print(perc)
-        rep_path=fr"{ds_ratio_path}/ratio_wo_outliers_std2_{perc}.csv"
+        rep_path=fr"{ds_ratio_path}/ratio_df_{perc}.csv"
         activity_by_rep_df_ds = pd.read_csv(rep_path)
-
-
         activity_by_rep_df_vectorized = activity_by_rep_df_ds[['RNA_rep1','DNA_rep1',
                                                        'RNA_rep2','DNA_rep2',
                                                        'RNA_rep3','DNA_rep3']]
@@ -1153,8 +1151,6 @@ def downsampling_preprocessing(ds_ratio_path):
                 return x  # fallback: return as-is if it cannot be parsed
 
         activity_by_rep_df_vectorized = activity_by_rep_df_vectorized.map(safe_eval)
-
-
 
         results = {}
 
@@ -1205,11 +1201,11 @@ def downsampling_preprocessing(ds_ratio_path):
     
 def plot_BC_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_bc):
     plt.clf()
-    x_arr_DNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='DNA_filtered_std2']['Sampling_parameter'].to_numpy(dtype=float)
-    y_arr_DNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='DNA_filtered_std2']['fraction'].to_numpy(dtype=float)
+    x_arr_DNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='DNA']['Sampling_parameter'].to_numpy(dtype=float)
+    y_arr_DNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='DNA']['fraction'].to_numpy(dtype=float)
 
-    x_arr_RNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='RNA_filtered_std2']['Sampling_parameter'].to_numpy(dtype=float)
-    y_arr_RNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='RNA_filtered_std2']['fraction'].to_numpy(dtype=float)
+    x_arr_RNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='RNA']['Sampling_parameter'].to_numpy(dtype=float)
+    y_arr_RNA=reps_sampling_df_bc[reps_sampling_df_bc['measurement']=='RNA']['fraction'].to_numpy(dtype=float)
 
     params_hill_DNA, _ = curve_fit(hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf))
     params_hill_RNA, _ = curve_fit(hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf))
@@ -1226,8 +1222,8 @@ def plot_BC_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_bc):
 
 
     c_palette = {
-        'RNA_filtered_std2': plot_color_pallete['barcode'],
-        'DNA_filtered_std2': plot_color_pallete['barcode'],
+        'RNA': plot_color_pallete['barcode'],
+        'DNA': plot_color_pallete['barcode'],
     }
 
     ax=sns.lineplot(data=reps_sampling_df_bc,x='Sampling_parameter',y='fraction',hue='measurement', style='measurement', marker=None, markers=m_palette,
@@ -1297,11 +1293,11 @@ def plot_BC_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_bc):
 
 def plot_cCRE_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_ccre):
     plt.clf()
-    x_arr_DNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='DNA_filtered_std2']['Sampling_parameter'].to_numpy(dtype=float)
-    y_arr_DNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='DNA_filtered_std2']['fraction'].to_numpy(dtype=float)
+    x_arr_DNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='DNA']['Sampling_parameter'].to_numpy(dtype=float)
+    y_arr_DNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='DNA']['fraction'].to_numpy(dtype=float)
 
-    x_arr_RNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='RNA_filtered_std2']['Sampling_parameter'].to_numpy(dtype=float)
-    y_arr_RNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='RNA_filtered_std2']['fraction'].to_numpy(dtype=float)
+    x_arr_RNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='RNA']['Sampling_parameter'].to_numpy(dtype=float)
+    y_arr_RNA=reps_sampling_df_ccre[reps_sampling_df_ccre['measurement']=='RNA']['fraction'].to_numpy(dtype=float)
 
     params_hill_DNA, _ = curve_fit(hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf))
     params_hill_RNA, _ = curve_fit(hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf))
@@ -1318,8 +1314,8 @@ def plot_cCRE_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_ccre):
 
 
     c_palette = {
-        'RNA_filtered_std2': plot_color_pallete['cCRE'],
-        'DNA_filtered_std2': plot_color_pallete['cCRE'],
+        'RNA': plot_color_pallete['cCRE'],
+        'DNA': plot_color_pallete['cCRE'],
     }
 
     ax=sns.lineplot(data=reps_sampling_df_ccre,x='Sampling_parameter',y='fraction',hue='measurement', style='measurement', marker=None, markers=m_palette,
@@ -1452,8 +1448,8 @@ def plot_cell_types_hexbin(cell_type_df):
 
 def plot_diff_activity_corr_reps_hexbin(pair_rep_df):
     plt.clf()
-    x = pair_rep_df['lfc_rep1'].values
-    y = pair_rep_df['lfc_rep2'].values
+    x = pair_rep_df['LFC_rep1'].values
+    y = pair_rep_df['LFC_rep2'].values
     plt.clf()
     fig, ax = plt.subplots()
 
@@ -1496,24 +1492,24 @@ if __name__ == "__main__":
 
     if "cDNA_reads_by_cell_type" in library_paths: # for PCA - activity_by_rep for two cell types
         print('loading cDNA_reads_by_cell_type...')
-        cDNA_reads_by_cell_type_df = pd.read_csv(library_paths["cDNA_reads_by_cell_type"],sep = '\t')
+        cDNA_reads_by_cell_type_df = pd.read_csv(library_paths["cDNA_reads_by_cell_type"])
         
 
-    if "oligo_fasta" in library_paths:
-        print('loading oligo_fasta...')
-        fasta_file = library_paths["oligo_fasta"]
+    if "cCRE_fasta" in library_paths:
+        print('loading cCRE_fasta...')
+        fasta_file = library_paths["cCRE_fasta"]
         
     if "different_std_threshold_analysis" in library_paths:
         print('loading different_std_threshold_analysis...')
-        std_analysis_df = pd.read_csv(library_paths["different_std_threshold_analysis"],sep = '\t')
+        std_analysis_df = pd.read_csv(library_paths["different_std_threshold_analysis"])
         
     if "screen_df" in library_paths:
         print('loading screen_df...')
-        screen_df = pd.read_csv(library_paths["screen_df"],index_col=0)
+        screen_df = pd.read_csv(library_paths["screen_df"])
         
     if "tss_df" in library_paths:
         print('loading tss_df...')
-        distance_df = pd.read_csv(library_paths["tss_df"] ,index_col=0)
+        distance_df = pd.read_csv(library_paths["tss_df"])
 
     if "AI_df" in library_paths:
         print('loading AI_df...')
@@ -1533,19 +1529,19 @@ if __name__ == "__main__":
 
     if "comparative_df" in library_paths:
         print('loading comparative_df...')
-        comparative_activity_df=pd.read_csv(library_paths["comparative_df"],index_col=0)
+        comparative_activity_df=pd.read_csv(library_paths["comparative_df"])
         
     if "allelic_pairs_df" in library_paths:
         print('loading allelic_pairs_df...')
-        allelic_pairs_df=pd.read_csv(library_paths["allelic_pairs_df"],index_col=0)
+        allelic_pairs_df=pd.read_csv(library_paths["allelic_pairs_df"])
 
     if "cell_types_df" in library_paths:
         print('loading cell_types_df...')
-        cell_types_df=pd.read_csv(library_paths["cell_types_df"],index_col=0)
+        cell_types_df=pd.read_csv(library_paths["cell_types_df"])
         
     if "allelic_pairs_replicates_df" in library_paths:
         print('loading allelic_pairs_replicates_df...')
-        pair_reps_df=pd.read_csv(library_paths["allelic_pairs_replicates_df"],index_col=0)
+        pair_reps_df=pd.read_csv(library_paths["allelic_pairs_replicates_df"])
     
     if "control_df" in library_paths:
         print('loading control_df...')
@@ -1580,7 +1576,7 @@ if __name__ == "__main__":
     if "activity_per_rep" in library_paths and "activity_df" in library_paths:
         plot_Replicability_by_activity(activity_by_rep_df,activity_df)
 
-    if "oligo_fasta" in library_paths and "activity_df" in library_paths:
+    if "cCRE_fasta" in library_paths and "activity_df" in library_paths:
         merged_activity_gc_df = create_gc_df(activity_df, fasta_file)
         plot_gc_content_bias(merged_activity_gc_df)
         
