@@ -21,8 +21,7 @@ It is designed for researchers who want a ready-to-use, reproducible framework f
 │  └─activity_analysis.py
 │  └─association_analysis.py
 │  └─const.py # Definitions and paths for running the notebooks
-├── output/ # Example outputs
-├── input/ # Example input
+├── input/ # Example inputs
 ├── environment.yml # Conda environment file
 └── README.md # Project documentation
 

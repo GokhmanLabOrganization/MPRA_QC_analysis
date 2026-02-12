@@ -1,0 +1,14 @@
+file	path
+cCRE_fasta	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/oligo_fasta.fasta
+activity_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/activity_df.csv
+different_std_threshold_analysis	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/different_std_threshold_analysis.csv
+downsampling_activity_path	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/downsampling/
+downsampling_ratio_path	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs//downsampling/
+comparative_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/comparative_df.csv
+AI_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/AI_df.csv
+AI_comparative_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/AI_comparative_df.csv
+allelic_pairs_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/allelic_pairs_df.csv
+allelic_pairs_replicates_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/allelic_pairs_replicates_df.csv
+cell_types_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/cell_types_df.csv
+control_df	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/control_df.csv
+output_path	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/script_output/sample_outputs/

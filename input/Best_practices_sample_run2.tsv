@@ -1,0 +1,8 @@
+file	path
+cCRE_fasta	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/oligo_fasta2.fasta
+association_before_promiscuity	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/association_before_promiscuity.csv
+associations_before_minimum_observations	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/association_before_minimum_associations.csv
+final_associations	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/final_associations.csv
+associations_downsampling_path	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/sample_inputs/downsampling/
+associations_downsampling_file_name	oligos_to_barcodes_comb_30_2
+output_path	/home/labs/davidgo/Collaboration/MPRA_QC_pipeline/script_output/sample_outputs/
