@@ -371,22 +371,22 @@ if __name__ == "__main__":
 
     if "final_associations" in library_paths:
         print('loading final_associations...')
-        final_associations = pd.read_csv(library_paths["final_associations"],index_col=0)
+        final_associations = pd.read_csv(library_paths["final_associations"])
         
     if "associations_before_promiscuity" in library_paths:
         print('loading prom_df...')
-        associations_before_promiscuity = pd.read_csv(library_paths["associations_before_promiscuity"],index_col=0)
+        associations_before_promiscuity = pd.read_csv(library_paths["associations_before_promiscuity"])
 
     if "associations_before_minimum_observations" in library_paths:
         print('loading associations_before_minimum_observations...')
-        associations_before_minimum_observations = pd.read_csv(library_paths["associations_before_minimum_observations"],index_col=0)
+        associations_before_minimum_observations = pd.read_csv(library_paths["associations_before_minimum_observations"])
 
     if "associations_downsampling_path" in library_paths and "associations_downsampling_file_name" in library_paths:
         print("Association downsampling data available")
     
     print("Creating plots...")
 
-    if "cCRE_fasta" in library_paths and "association_final" in library_paths:
+    if "cCRE_fasta" in library_paths and "final_associations" in library_paths:
         feature_dict, oligo_list, n_oligos=feature_dict_creator(fasta_path)
         counts_df=counts_df_creator(final_associations,oligo_list,feature_dict)
         BCs_per_cCRE_plot(counts_df)
