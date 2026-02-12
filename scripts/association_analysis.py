@@ -379,7 +379,7 @@ if __name__ == "__main__":
 
     if "associations_before_minimum_observations" in library_paths:
         print('loading associations_before_minimum_observations...')
-        associations_before_minimum_observations = pd.read_csv(library_paths["association_before_minimum_associations"],index_col=0)
+        associations_before_minimum_observations = pd.read_csv(library_paths["associations_before_minimum_observations"],index_col=0)
 
     if "associations_downsampling_path" in library_paths and "associations_downsampling_file_name" in library_paths:
         print("Association downsampling data available")
@@ -394,7 +394,7 @@ if __name__ == "__main__":
         PCR_bias_GC_plot(counts_df)
         PCR_bias_G_stretches_plot(counts_df)
 
-    if "association_before_minimum_associations" in library_paths:
+    if "associations_before_minimum_observations" in library_paths:
         Reads_per_association_plot(associations_before_minimum_observations)
     
     if "associations_before_promiscuity" in library_paths:
