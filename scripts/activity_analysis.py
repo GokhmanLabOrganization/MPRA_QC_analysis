@@ -30,7 +30,6 @@ import ast # for safe eveal, for parsing some of the data
 import math
 
 import const #to reload use import(importlib) and then importlib.reload(const)
-from const import MPRA_data_paths
 from const import pos_active_ctrl_color,neg_active_ctrl_color,highlight_color,custom_cmap
 from const import set_equal_plot_limits
 from const import plot_color_pallete

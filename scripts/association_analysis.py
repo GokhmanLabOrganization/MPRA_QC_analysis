@@ -1,7 +1,6 @@
 ### Import modules and set plot style
 
 import const
-from const import MPRA_data_paths
 from const import pos_active_ctrl_color,neg_active_ctrl_color,highlight_color,custom_cmap
 from const import plot_color_pallete
 const.set_plot_style()
