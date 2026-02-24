@@ -1477,6 +1477,55 @@ def plot_diff_activity_corr_reps_hexbin(pair_rep_df):
     const.save_fig(plt,'Correlation_of_differential_activity_between_replicates',output_path)
 
 
+def plot_sample_clustering(reads_df, metadata_df):
+    pca_input=reads_df.copy()
+    groups=metadata_df['Group'].values
+
+
+    # Transpose for PCA (samples = columns in R)
+    X = pca_input.T.values
+    X_scaled = StandardScaler().fit_transform(X)
+
+    pca = PCA()
+    pcs = pca.fit_transform(X_scaled)
+
+    # Variance explained
+    var_explained = pca.explained_variance_ratio_ * 100  # %
+
+    # Build dataframe for plotting
+    pca_df = pd.DataFrame(pcs, columns=[f"PC{i+1}" for i in range(pcs.shape[1])])
+    pca_df["group"] = groups
+
+    # Plot PC1 vs PC2
+    plt.figure(figsize=(6, 5))
+    ax = sns.scatterplot(
+        data=pca_df,
+        x="PC1",
+        y="PC2",
+        hue="group",
+        style="group",
+        s=80
+    )
+
+    # Rename legend labels
+    new_labels = metadata_df['Group'].unique()    
+    handles, new_labels = ax.get_legend_handles_labels()
+    ax.legend(handles=handles[0:], labels=new_labels, title="Cell type")
+
+    # Axis labels with variance explained
+    ax.set_xlabel(f"PC1 ({var_explained[0]:.1f}%)")
+    ax.set_ylabel(f"PC2 ({var_explained[1]:.1f}%)")
+
+    # Remove tick labels for cleaner look
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    plt.tight_layout()
+    print("Sample_clustering DONE")
+    const.save_fig(plt, "Sample_clustering", output_path)
+
+
+
 
 if __name__ == "__main__":
     #load data
@@ -1489,10 +1538,13 @@ if __name__ == "__main__":
         print('loading activity_per_rep...')
         activity_by_rep_df = pd.read_csv(library_paths["activity_per_rep"])
 
-    if "cDNA_reads_by_cell_type" in library_paths: # for PCA - activity_by_rep for two cell types
-        print('loading cDNA_reads_by_cell_type...')
-        cDNA_reads_by_cell_type_df = pd.read_csv(library_paths["cDNA_reads_by_cell_type"])
-        
+    if "reads_by_group" in library_paths: 
+        print('loading reads_by_group...')
+        reads_by_group_df = pd.read_csv(library_paths["reads_by_group"])
+
+    if "samples_metadata" in library_paths: 
+        print('loading samples_metadata...')
+        samples_metadata_df = pd.read_csv(library_paths["samples_metadata"])    
 
     if "cCRE_fasta" in library_paths:
         print('loading cCRE_fasta...')
@@ -1579,8 +1631,6 @@ if __name__ == "__main__":
         merged_activity_gc_df = create_gc_df(activity_df, fasta_file)
         plot_gc_content_bias(merged_activity_gc_df)
         
-
-    
     if "activity_per_rep" in library_paths:
         activity_by_rep_df_vectorized = vectorize_df_columns(activity_by_rep_df)
         results_melted= melt_df(activity_by_rep_df_vectorized)
@@ -1628,6 +1678,9 @@ if __name__ == "__main__":
         ds_ccre_df,ds_barcode_df=downsampling_preprocessing(downsampling_ratio_path)
         plot_BC_retention_by_DNA_RNA_sequencing_depth(ds_barcode_df)
         plot_cCRE_retention_by_DNA_RNA_sequencing_depth(ds_ccre_df) 
+    
+    if "reads_by_group" in library_paths and "samples_metadata" in library_paths:
+        plot_sample_clustering(reads_by_group_df,samples_metadata_df)
     
     print('Done!')
 
