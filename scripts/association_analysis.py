@@ -46,8 +46,8 @@ def counts_df_creator(assoc_df,oligos,f_dict):
     saved_oligos=grouped_df.groups.keys()
     counts_df=pd.DataFrame(data={"barcode_count":bc_count,"association_count":assoc_count})
     lost_oligos=[oligo for oligo in oligos if oligo not in saved_oligos ]
-    add_df=pd.DataFrame(data={"barcode_count":0,"association_count":0},index=lost_oligos)
-    full_df=pd.concat([counts_df,add_df])
+    zero_counts_df=pd.DataFrame(data={"barcode_count":0,"association_count":0},index=lost_oligos)
+    full_df=pd.concat([counts_df,zero_counts_df])
     full_df['gc']=full_df.index.to_series().apply(lambda x: f_dict[x][0])
     full_df['g_stretch']=full_df.index.to_series().apply(lambda x: f_dict[x][1])
     full_df['len']=full_df.index.to_series().apply(lambda x: f_dict[x][2])

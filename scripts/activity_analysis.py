@@ -466,65 +466,47 @@ def create_gc_df(act_df,f_file):
     merged_gc_activity.loc[:,'DNA_rep_comb_clipped_500'] = merged_gc_activity['DNA_rep_comb'].clip(upper=500, inplace=False)
     merged_gc_activity.loc[:, 'GC_Content_clipped_25_60'] = merged_gc_activity['GC_Content'].clip(lower=25, upper=60, inplace=False)
     bins = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]
-    labels = [
-        '0-5', '5-10', '10-15', '15-20', '20-25', '25-30', '30-35', '35-40',
-        '40-45', '45-50', '50-55', '55-60', '60-65', '65-70', '70-75', '75-80',
-        '80-85', '85-90', '90-95', '95-100'
-    ]
-
-
-    merged_gc_activity.loc[:,'GC_Content_label'] = pd.cut(merged_gc_activity['GC_Content'], bins=bins, labels=labels, right=True)
+    merged_gc_activity.loc[:,'GC_Content_label'] = pd.cut(merged_gc_activity['GC_Content'],bins=bins,duplicates="drop")
     return merged_gc_activity
 
 
-def plot_gc_content_bias(merged_gc_activity):
-    labels = [
-        '0-5', '5-10', '10-15', '15-20', '20-25', '25-30', '30-35', '35-40',
-        '40-45', '45-50', '50-55', '55-60', '60-65', '65-70', '70-75', '75-80',
-        '80-85', '85-90', '90-95', '95-100'
-    ]
-    plt.clf()   
-    f, (ax_DNA ,ax_hist) = plt.subplots(2, sharex=True,gridspec_kw={"height_ratios": (.5,.5)})
-    sns.boxplot(
-        x=merged_gc_activity["GC_Content_label"],
-        y=merged_gc_activity["DNA_rep_comb"],
-        showfliers=False,
-        color=plot_color_pallete['read'],
-        ax=ax_DNA)
+def plot_gc_content_bias(final_counts_df):
+    bin_sizes=final_counts_df.reset_index().groupby('GC_Content_label')['index'].nunique()
+    bin_df=pd.DataFrame(data={"GC_Content_label":bin_sizes.index,"bin_size":bin_sizes.values})
 
-    # Set y-axis limits and ticks for DNA boxplot
-    ax_DNA.set_ylim(bottom=0)
-    yticks_DNA = ax_DNA.get_yticks()
-    ax_DNA.set_yticks([yticks_DNA[0], yticks_DNA[-1]])
+    bin_intervals = bin_df['GC_Content_label'].cat.categories
+    bin_edges = [i.left for i in bin_intervals] + [bin_intervals[-1].right]
+    bin_widths = [(i.right - i.left)/2 for i in bin_intervals]
+    # Get bar heights in the same order
+    boxplot_df = final_counts_df.copy()
+    boxplot_df = boxplot_df.dropna(subset=['GC_Content_label', 'DNA_rep_comb'])
+    boxplot_df['gc_bin_center'] = boxplot_df['GC_Content_label'].apply(lambda x: (float(x.left)+float(x.right))/2)
+    boxplot_groups = boxplot_df.groupby('gc_bin_center')['DNA_rep_comb'].apply(list)
+    gc_summary = boxplot_df.groupby('GC_Content_label',observed=False)['DNA_rep_comb'].agg(['count','median']).reset_index()
+    f, ax_hist = plt.subplots()
+    ax_hist.boxplot(x=boxplot_groups.values,positions=boxplot_groups.index,showfliers=False,widths=bin_widths,
+                    patch_artist=True,boxprops=dict(facecolor=plot_color_pallete['read']),
+        medianprops=dict(color='black', linewidth=1))
+    ax_hist.set_ylabel("Number of reads")
+    ax2 = ax_hist.twinx()
+    ax2.plot(boxplot_groups.index, gc_summary['count'],
+            color=plot_color_pallete['cCRE'], marker='o', label='cCRE count')
+    ax2.set_ylabel("Number of cCREs")
+    ax2.yaxis.label.set_color(plot_color_pallete['cCRE'])
+    ax_hist.yaxis.label.set_color(plot_color_pallete['read'])
+    ax_hist.tick_params(axis='y', colors=plot_color_pallete['read'])
+    ax2.tick_params(axis='y', colors=plot_color_pallete['cCRE'])
+    ax_hist.spines['right'].set_visible(True)
 
-    sns.histplot(
-        x=merged_gc_activity["GC_Content_label"],
-        color=plot_color_pallete['cCRE'],
-        ax=ax_hist)
-
-    # Set x-axis limits to show 20-80% range
-    # Find the positions of categories within the filtered data
-    categories = [label for label in labels if label in merged_gc_activity["GC_Content_label"].cat.categories]
-    first_cat_pos = 0
-    last_cat_pos = len(categories) - 1
-
-    ax_hist.set_xlim(-0.5, last_cat_pos + 0.5)
-    ax_DNA.set_xlim(-0.5, last_cat_pos + 0.5)
-
-    # Set x-axis ticks to show only "0" and "100"
-    ax_hist.set_xticks([first_cat_pos, last_cat_pos])
-    ax_hist.set_xticklabels(['0', '100'], rotation=45)
-
-    ax_DNA.set_ylabel("DNA reads")
     ax_hist.set_xlabel("%GC")
-    ax_hist.set_ylabel("cCREs")
-
-    # Set y-axis limits and ticks for histogram
-    ax_hist.set_ylim(bottom=0)
-    yticks_hist = ax_hist.get_yticks()
-    ax_hist.set_yticks([yticks_hist[0], yticks_hist[-1]])
+    ax_hist.set_ylabel("DNA reads")
+    ax_hist.set_xlim(0, 100)
+    ax_hist.set_xticks([0, 100])
+    ax_hist.set_xticklabels(['0', '100'])
+    f.set_size_inches(8, 8)
     print("DNA_counts_vs_GC_content DONE")
     const.save_fig(plt,'DNA_counts_vs_GC_content',output_path)
+
 
 def plot_ratio_correlation_between_replicates(activity_by_rep):
     # Prepare the data
@@ -1082,7 +1064,7 @@ def plot_differential_activity_volcano(comparative_df):
     plt.axhline(-np.log10(p_thresh), linestyle="--", linewidth=1)
     plt.xlabel('logFC')
     plt.ylabel(f"-log10(FDR)")
-    plt.xlim(-5, 5)
+    plt.xlim(np.floor(comparative_df['logFC'].min()), np.ceil(comparative_df['logFC'].max()))
     plt.legend(loc="upper right",frameon=False)
     print("Volcano_plot_FC_vs_Pval DONE")
     const.save_fig(plt,"Volcano_plot_FC_vs_Pval",output_path)
@@ -1606,8 +1588,7 @@ if __name__ == "__main__":
         pos_olg = group_dict['positive_ctrl']  
         neg_olg = group_dict['negative_ctrl']
         test_olg = group_dict['test_cCRE']
-    if "FDR_comp_col" in library_paths:
-        FDR_comp_colname=library_paths["FDR_comp_col"]
+
     
     
 
