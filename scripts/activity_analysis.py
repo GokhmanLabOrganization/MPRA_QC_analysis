@@ -256,10 +256,10 @@ def plot_retained_cCREs_and_barcodes(result_melted_df):
     measurement_handles = [
         Line2D([0], [0], marker='_', linestyle='None',
                markerfacecolor='gold', markeredgecolor='gold',
-               markersize=8, label='RNA'),
+               markersize=24, label='RNA'),
         Line2D([0], [0], marker='_', linestyle='None',
                markerfacecolor='navy', markeredgecolor='navy',
-               markersize=8, label='DNA')
+               markersize=24, label='DNA')
     ]
 
     legend1 = ax.legend(
@@ -274,11 +274,11 @@ def plot_retained_cCREs_and_barcodes(result_melted_df):
     # custom legend for rep_id (shapes)
     rep_handles = [
         Line2D([0], [0], marker='o', linestyle='None',
-               color='black', markersize=7, label='1'),
+               color='black', markersize=14, label='1'),
         Line2D([0], [0], marker='X', linestyle='None',
-               color='black', markersize=7, label='2'),
+               color='black', markersize=14, label='2'),
         Line2D([0], [0], marker='s', linestyle='None',
-               color='black', markersize=6, label='3')
+               color='black', markersize=14, label='3')
     ]
 
     legend2 = ax.legend(
