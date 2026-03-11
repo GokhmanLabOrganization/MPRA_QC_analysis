@@ -170,7 +170,6 @@ def melt_df(df):
     results = {}
 
     for col in df.columns:
-        print(col)
         series = df[col]
 
         # drop NAs and ensure all entries are lists
@@ -198,11 +197,13 @@ def melt_df(df):
 
     # Extract measurement type (before "_rep")
     results_df["measurement"] = results_df["rep"].str.split("_rep").str[0]
+    results_df['rep_id'] = results_df["rep"].str.extract(r'(\d+)')
+    
 
 
     # Melt into tidy format
     results_melted_df = results_df.melt(
-        id_vars=["rep", "measurement"],
+        id_vars=[ "measurement",'rep_id'],
         value_vars=["cCRE", "Barcode"],
         var_name="metric",
         value_name="fraction"
@@ -213,65 +214,82 @@ def melt_df(df):
 def plot_retained_cCREs_and_barcodes(result_melted_df):
     plt.clf()
 
-    print('NOTE: need to fix the x axis in illustrator')
-    # Clean measurement name
-    result_melted_df["measurement_clean"] = result_melted_df["measurement"].str.replace("_filtered_std2", "")
-
-    # Build combined label with replicate number
-    result_melted_df["group_rep"] = (
-        result_melted_df["metric"] + " " +
-        result_melted_df["measurement_clean"] + " " +
-        result_melted_df["rep"].str.extract(r'(rep\d+)')[0]
-    )
-
     # Desired order (12 bars total, clustered by metric)
     order = [
-        "cCRE DNA rep1",
-        "cCRE DNA rep2",
-        "cCRE DNA rep3",
-        "cCRE RNA rep1",
-        "cCRE RNA rep2",
-        "cCRE RNA rep3",
-        "Barcode DNA rep1",
-        "Barcode DNA rep2",
-        "Barcode DNA rep3",
-        "Barcode RNA rep1",
-        "Barcode RNA rep2",
-        "Barcode RNA rep3"
-    ]
+        "cCRE",
+        "Barcode",
+        ]
 
     # Assign colors: map each group to x or y
-    palette = {grp: (plot_color_pallete['cCRE'] if "cCRE" in grp else plot_color_pallete['barcode']) for grp in order}
+    palette = {"DNA":'navy',"RNA":"gold"}
+    group_order = list(result_melted_df["metric"].unique())
+    result_melted_df["metric"] = pd.Categorical(result_melted_df["metric"], categories=group_order, ordered=True)
+    # map categories to numeric x positions
+    x_map = {g: i for i, g in enumerate(group_order)}
+    result_melted_df["x"] = result_melted_df["metric"].map(x_map).astype(float)
 
-    plt.figure(figsize=(12,6))
-    ax = sns.barplot(
-        data=result_melted_df,
-        x="group_rep",
-        y="fraction",
-        order=order,
-        palette=palette,
-        ci=None
+    # small jitter so points don't fully overlap
+    np.random.seed(1)
+    result_melted_df["x_jitter"] = result_melted_df["x"] + np.random.uniform(-0.3, 0.3, size=len(result_melted_df))
+    ax=sns.scatterplot(
+    data=result_melted_df,
+    x="x_jitter",
+    y="fraction",
+    hue="measurement",
+    style="rep_id",
+    palette=palette,
+    s=90,
+    )
+    
+    ax.set_xticks(range(len(group_order)))
+    ax.set_xticklabels(group_order, rotation=45, ha="right")
+    ax.set_xlabel("")
+    ax.set_ylabel("Fraction retained")
+
+    plt.yticks([0,1])
+        # Keep only style legend entries
+    # remove seaborn's automatic legend
+    if ax.legend_ is not None:
+        ax.legend_.remove()
+
+    # custom legend for measurement (colors)
+    measurement_handles = [
+        Line2D([0], [0], marker='_', linestyle='None',
+               markerfacecolor='gold', markeredgecolor='gold',
+               markersize=8, label='RNA'),
+        Line2D([0], [0], marker='_', linestyle='None',
+               markerfacecolor='navy', markeredgecolor='navy',
+               markersize=8, label='DNA')
+    ]
+
+    legend1 = ax.legend(
+        handles=measurement_handles,
+        title="",
+        loc="upper left",
+        bbox_to_anchor=(1.00, 1.00),
+        frameon=True
+    )
+    ax.add_artist(legend1)
+
+    # custom legend for rep_id (shapes)
+    rep_handles = [
+        Line2D([0], [0], marker='o', linestyle='None',
+               color='black', markersize=7, label='1'),
+        Line2D([0], [0], marker='X', linestyle='None',
+               color='black', markersize=7, label='2'),
+        Line2D([0], [0], marker='s', linestyle='None',
+               color='black', markersize=6, label='3')
+    ]
+
+    legend2 = ax.legend(
+        handles=rep_handles,
+        title="Replicate",
+        loc="upper left",
+        bbox_to_anchor=(1.02, 0.77),
+        frameon=True
     )
 
 
-    # Add value labels above bars
-    for patch in ax.patches:
-        height = patch.get_height()
-        ax.text(
-            patch.get_x() + patch.get_width() / 2,
-            height + 0.02,  # a little above the bar
-            f"{height*100:.0f}%",  # no digits after decimal
-            ha="center",
-            va="bottom",
-            fontweight="bold",
-            fontsize=FONT_SIZE_small
-        )
-
-    plt.ylabel("Percentage retained")
-    plt.xlabel("")
-    plt.yticks([0,1])
-
-    plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
     print("Retained_cCREs_and_BCs DONE")
     const.save_fig(plt,'Retained_cCREs_and_BCs',output_path)
