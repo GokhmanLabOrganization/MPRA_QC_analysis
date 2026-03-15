@@ -62,7 +62,7 @@ def barcode_df_counts_creator(assoc_df):
 
 def downsampling_bc_counts(assoc_df):
     final_df=assoc_df.copy()
-    bc_counts = final_df.groupby('oligo')['bc_seq'].size()
+    bc_counts = final_df.groupby('cCRE')['barcode'].size()
     return pd.DataFrame(data={'bc_counts':bc_counts})
 
 def hill_model(x, a, b, n):
@@ -338,12 +338,12 @@ def downsampling_Barcodes_per_cCRE_plot(downsampling_df_total):
     const.save_fig(plt,"Downsampling_Barcodes_per_cCRE",output_path)
 
 
-def downsampling_analysis(downsampling_perc_list,total_oligos,data_path,file_name):
+def downsampling_analysis(downsampling_perc_list,total_oligos,data_path):
     dfs=[]
     for p in downsampling_perc_list:
         perc=round(p,1)
         print(perc)
-        path=fr"{data_path}{file_name}_{perc}.txt"
+        path=fr"{data_path}associations_final_{perc}.csv"
         df=pd.read_csv(path)
         curr_df=downsampling_bc_counts(df)
         curr_df['ds']=perc
@@ -400,9 +400,8 @@ if __name__ == "__main__":
         prom_counts_df=barcode_df_counts_creator(associations_before_promiscuity)
         cCREs_per_BC_plot(prom_counts_df)
 
-    if "associations_downsampling_path" in library_paths and "cCRE_fasta" in library_paths and "associations_downsampling_file_name" in library_paths:
+    if "associations_downsampling_path" in library_paths and "cCRE_fasta" in library_paths:
         d_path=library_paths["associations_downsampling_path"]
-        fname=library_paths["associations_downsampling_file_name"]
         downsampling_perc_list=np.arange(0.1,1.01,0.1)
-        downsampling_analysis(downsampling_perc_list,n_oligos,d_path,fname)
+        downsampling_analysis(downsampling_perc_list,n_oligos,d_path)
     print('All done!')
