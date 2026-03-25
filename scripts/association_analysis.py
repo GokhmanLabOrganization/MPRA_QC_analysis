@@ -125,6 +125,7 @@ def BCs_per_cCRE_plot(final_counts_df):
         f"Average number of barcodes: {avg:.0f}", color=plot_color_pallete['barcode']
     )
     ax_ecdf.yaxis.set_major_formatter(ticker.FuncFormatter(lambda val, _: f"{val * 100:.0f}%"))
+    plt.xscale("log")
     print("BCs_per_cCRE DONE")
     const.save_fig(plt,"BCs_per_cCRE", output_path)
 
