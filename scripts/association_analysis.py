@@ -431,16 +431,26 @@ if __name__ == "__main__":
 
     print("Creating plots...")
 
-    if "cCRE_fasta" in library_paths and "final_associations" in library_paths:
+    if "cCRE_fasta" in library_paths:
         feature_dict, oligo_list, n_oligos = feature_dict_creator(fasta_path)
+
+    if "cCRE_fasta" in library_paths and "final_associations" in library_paths:
+        final_associations=final_associations.loc[final_associations['cCRE'].isin(oligo_list)]
         counts_df = counts_df_creator(final_associations, oligo_list, feature_dict)
         BCs_per_cCRE_plot(counts_df)
         Retained_cCREs_plot(counts_df, oligo_list)
         PCR_bias_GC_plot(counts_df)
         PCR_bias_G_stretches_plot(counts_df)
 
+    if "cCRE_fasta" in library_paths and "associations_before_minimum_observations" in library_paths:
+        associations_before_minimum_observations=associations_before_minimum_observations.loc[associations_before_minimum_observations['cCRE'].isin(oligo_list)]
+  
+
     if "associations_before_minimum_observations" in library_paths:
         Reads_per_association_plot(associations_before_minimum_observations)
+
+    if "cCRE_fasta" in library_paths and "associations_before_promiscuity" in library_paths:
+        associations_before_promiscuity=associations_before_promiscuity.loc[associations_before_promiscuity['cCRE'].isin(oligo_list)]
 
     if "associations_before_promiscuity" in library_paths:
         prom_counts_df = barcode_df_counts_creator(associations_before_promiscuity)
