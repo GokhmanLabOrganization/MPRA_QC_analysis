@@ -22,12 +22,12 @@ properties:
 additionalProperties: false
 anyOf:
   - required:
-    - project
-    - association
+      - project
+      - association
   - required:
-    - project
-    - activity
+      - project
+      - activity
   - required:
-    - project
-    - association
-    - activity
+      - project
+      - association
+      - activity
