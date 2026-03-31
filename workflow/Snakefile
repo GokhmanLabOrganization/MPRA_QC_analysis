@@ -16,17 +16,21 @@ print(f"\033[95mRunning MPRA QC analysis version {__version__.public}\033[0m")
 containerized: f"docker://visze/mpra_qc_analysis:{__version__.base_version}"
 
 
+container: "docker://visze/mpra_qc_analysis:cli_0.0.1"
+
+
 #################
 #### imports ####
 #################
 import pandas as pd
 
+##### check snakemake min version #####
+from snakemake.utils import min_version
+
 ##################
 #### SETTINGS ####
 ##################
 
-##### check snakemake min version #####
-from snakemake.utils import min_version
 
 min_version("8.24.1")
 
@@ -61,31 +65,91 @@ print(f"\033[95mProject:\033[92m {config['project']}\033[0m")
 
 rule all:
     """
-    General all rule to get all output files for MPRA QC analysis (default rule).
-    """
+General all rule to get all output files for MPRA QC analysis (default rule).
+"""
     input:
-        f"results/{config['project']}/association.done"
-        if "association" in config
+        expand(
+            "results/{project}/association/{plot}.{file_type}",
+            plot=get_association_before_promiscuity_plots(association_files)
+            + get_association_downsampling_plots(association_files)
+            + get_association_before_minimum_observations_plots(association_files)
+            + get_association_final_plots(association_files),
+            file_type=["pdf", "eps", "png", "svg"],
+            project=config["project"],
+        ),
+        expand(
+            "results/{project}/activity/{plot}.{file_type}",
+            plot=get_activity_main_plots(activity_files)
+            + get_activity_control_boxplots_plots(activity_files)
+            # + get_activity_replicability_by_activity_plots(activity_files)
+            + get_activity_gc_content_bias_plots(activity_files)
+            # + get_activity_ratio_correlation_between_replicates_plots(activity_files)
+            + get_activity_ratio_correlation_with_controls_plots(activity_files)
+            + get_activity_downsampling_plots(activity_files)
+            + get_activity_reproducibility_by_sequencing_depth_plots(activity_files)
+            + get_activity_mimimise_noise_plots(activity_files)
+            + get_activity_screen_annotations_plots(activity_files)
+            + get_activity_tss_proximity_plots(activity_files)
+            + get_activity_prediction_vs_activity_plots(activity_files)
+            + get_activity_prediction_vs_differential_activity_plots(activity_files)
+            + get_activity_comparative_plots(activity_files)
+            # + get_activity_allelic_pairs_plots(activity_files)
+            + get_activity_cell_types_plots(activity_files)
+            + get_activity_comparative_replicates_plots(activity_files)
+            + get_activity_sample_clusters_plots(activity_files),
+            file_type=["pdf", "eps", "png", "svg"],
+            project=config["project"],
+        )
+        if "activity" in config
         else [],
-        f"results/{config['project']}/activity.done" if "activity" in config else [],
 
 
 rule all_association:
     """
-    All rule to get all output files for the association workflow.
-    """
+All rule to get all output files for the association workflow.
+"""
     input:
-        f"results/{config['project']}/association.done"
-        if "association" in config
-        else [],
+        expand(
+            "results/{{project}}/association/{plot}.{file_type}",
+            plot=get_association_before_promiscuity_plots(association_files)
+            + get_association_downsampling_plots(association_files)
+            + get_association_before_minimum_observations_plots(association_files)
+            + get_association_final_plots(association_files),
+            file_type=["pdf", "eps", "png", "svg"],
+            project=config["project"],
+        ),
 
 
 rule all_activity:
     """
-    All rule to get all output files for the activity workflow.
-    """
+All rule to get all output files for the activity workflow.
+"""
     input:
-        f"results/{config['project']}/activity.done" if "activity" in config else [],
+        expand(
+            "results/{project}/activity/{plot}.{file_type}",
+            plot=get_activity_main_plots(activity_files)
+            + get_activity_control_boxplots_plots(activity_files)
+            # + get_activity_replicability_by_activity_plots(activity_files)
+            + get_activity_gc_content_bias_plots(activity_files)
+            # + get_activity_ratio_correlation_between_replicates_plots(activity_files)
+            + get_activity_ratio_correlation_with_controls_plots(activity_files)
+            + get_activity_downsampling_plots(activity_files)
+            + get_activity_reproducibility_by_sequencing_depth_plots(activity_files)
+            + get_activity_mimimise_noise_plots(activity_files)
+            + get_activity_screen_annotations_plots(activity_files)
+            + get_activity_tss_proximity_plots(activity_files)
+            + get_activity_prediction_vs_activity_plots(activity_files)
+            + get_activity_prediction_vs_differential_activity_plots(activity_files)
+            + get_activity_comparative_plots(activity_files)
+            # + get_activity_allelic_pairs_plots(activity_files)
+            + get_activity_cell_types_plots(activity_files)
+            + get_activity_comparative_replicates_plots(activity_files)
+            + get_activity_sample_clusters_plots(activity_files),
+            file_type=["pdf", "eps", "png", "svg"],
+            project=config["project"],
+        )
+        if "activity" in config
+        else [],
 
 
 ###################

@@ -2,6 +2,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
+  - snakemake
   - biopython
   - matplotlib
   - numpy
@@ -11,3 +12,4 @@ dependencies:
   - scikit-learn
   - scipy
   - seaborn
+  - click

@@ -1,7 +1,0 @@
-file	path
-cCRE_fasta	/path/to/input/files/sample_inputs/cCRE_fasta2.fasta
-associations_before_promiscuity	/path/to/input/files/sample_inputs/associations_before_promiscuity.csv
-associations_before_minimum_observations	/path/to/input/files/sample_inputs/associations_before_minimum_observations.csv
-final_associations	/path/to/input/files/sample_inputs/final_associations.csv
-associations_downsampling_path	/path/to/input/files/sample_inputs/downsampling/
-output_path	/path/to/output/files/sample_outputs/

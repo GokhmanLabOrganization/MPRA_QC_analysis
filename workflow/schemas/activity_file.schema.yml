@@ -11,8 +11,8 @@ type: object
 properties:
   file:
     type: string
-    enum: ["cCRE_fasta", "activity_df", "different_std_threshold_analysis", "downsampling_activity_path", "downsampling_ratio_path", "comparative_df", "AI_df", "AI_comparative_df", "allelic_pairs_df", "allelic_pairs_replicates_df", "cell_types_df", "control_df", "output_path"]
-    description: File type, e.g. cCRE_fasta, activity_df, different_std_threshold_analysis, downsampling_activity_path, downsampling_ratio_path, comparative_df, AI_df, AI_comparative_df, allelic_pairs_df, allelic_pairs_replicates_df, cell_types_df, control_df, or output_path.
+    enum: ["cCRE_fasta", "activity_df", "screen_df", "tss_df", "std_analysis_df", "different_std_threshold_analysis", "downsampling_activity_path", "downsampling_ratio_path", "activity_per_rep", "comparative_df", "AI_df", "AI_comparative_df", "allelic_pairs_df", "allelic_pairs_replicates_df", "cell_types_df", "control_df", "output_path"]
+    description: File type, e.g. cCRE_fasta, activity_df, screen_df, tss_df, std_analysis_df, different_std_threshold_analysis, downsampling_activity_path, downsampling_ratio_path, activity_per_rep, comparative_df, AI_df, AI_comparative_df, allelic_pairs_df, allelic_pairs_replicates_df, cell_types_df, control_df, or output_path.
   path:
     type: string
     description: Path to the file.

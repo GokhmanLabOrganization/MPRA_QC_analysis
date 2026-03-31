@@ -10,11 +10,12 @@
 # ------------------------
 # Python
 # ------------------------
-__pycache__/
+*__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
+*.pyc
 
 # Virtual environments
 .venv/
@@ -58,4 +59,5 @@ Thumbs.db
 .snakemake
 !workflow
 !workflow/**
+workflow/scripts/__pycache__
 *results
