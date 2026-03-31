@@ -27,7 +27,6 @@ jobs:
           VALIDATE_YAML: true
           YAML_CONFIG_FILE: .yamllint.yml
           VALIDATE_SNAKEMAKE_SNAKEFMT: true
-          VALIDATE_R: false
           SAVE_SUPER_LINTER_SUMMARY: true
 
   Linting:
