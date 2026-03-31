@@ -21,13 +21,13 @@ properties:
     type: string
 additionalProperties: false
 anyOf:
-  - required: 
+  - required:
     - project
     - association
-  - required: 
+  - required:
     - project
     - activity
-  - required: 
+  - required:
     - project
     - association
     - activity
