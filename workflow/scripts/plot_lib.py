@@ -190,13 +190,13 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     )
     ax_hist.set_xticks([bin_edges[0], bin_edges[-1]])
     ax_hist.set_xlabel("GC content")
-    ax_hist.set_ylabel("Number of reads")
+    ax_hist.set_ylabel("Number of reads per cCRE")
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
     ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
     ax2 = ax_hist.twinx()
     ax2.plot(boxplot_groups.index, gc_summary["count"], color=plot_color_pallete["cCRE"], marker="o", label="cCRE count")
-    ax2.set_ylabel("Number of cCREs")
+    ax2.set_ylabel("Number of unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -372,6 +372,8 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
 
     x = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep1"].values)
     y = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep2"].values)
+    
+    r = pearsonr(x, y)[0]
 
     fig, ax = plt.subplots()
 
@@ -387,6 +389,10 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
 
     ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
     ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 2")
+    
+    plt.text(
+        0.05, 0.95, s=rf"r= {round(r,3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left"
+    )
 
     xticks = ax.get_xticks()
     yticks = ax.get_yticks()
@@ -1124,6 +1130,10 @@ def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
                     edgecolors="none",
                     # NOTE: we’ll apply a shared LogNorm AFTER we know global max
                 )
+                
+                r = pearsonr(x, y)[0]
+                
+                ax.text(0.03, 0.97, f"r = {r:.3f}", transform=ax.transAxes, ha="left", va="top")
 
                 # Track global max count across panels for shared color scaling
                 panel_max = float(np.nanmax(hb.get_array())) if hb.get_array().size else 0.0
