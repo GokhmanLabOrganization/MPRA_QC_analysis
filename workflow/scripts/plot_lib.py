@@ -170,11 +170,18 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
     boxplot_df = final_counts_df.copy()
     boxplot_df["gc_bin_center"] = boxplot_df["gc_bin"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
-    boxplot_groups = boxplot_df.groupby("gc_bin_center")["association_count"].apply(list)
+   
+    boxplot_groups = (
+    boxplot_df.groupby("gc_bin_center", observed=True)["association_count"]
+    .apply(list)
+    )
 
-    gc_summary = boxplot_df.groupby("gc_bin", observed=False)["association_count"].agg(["count", "median"]).reset_index()
-
-    #gc_summary = gc_summary[gc_summary["count"] > 0]
+    gc_summary = (
+    boxplot_df.groupby("gc_bin_center", observed=True)["association_count"]
+    .agg(count="size", median="median")
+    .reset_index()
+    )
+    
     bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
@@ -195,7 +202,13 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
     ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
     ax2 = ax_hist.twinx()
-    ax2.plot(boxplot_groups.index, gc_summary["count"], color=plot_color_pallete["cCRE"], marker="o", label="cCRE count")
+    ax2.plot(
+    gc_summary["gc_bin_center"],
+    gc_summary["count"],
+    color=plot_color_pallete["cCRE"],
+    marker="o",
+    label="cCRE count",
+    )
     ax2.set_ylabel("Number of unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
@@ -788,16 +801,24 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
     bin_intervals = bin_df["GC_Content_label"].cat.categories
     bin_edges = [i.left for i in bin_intervals] + [bin_intervals[-1].right]
-    bin_widths = [(i.right - i.left) / 2 for i in bin_intervals]
-    # Get bar heights in the same order
+
     boxplot_df = final_counts_df.copy()
     boxplot_df = boxplot_df.dropna(subset=["GC_Content_label", "DNA_rep_comb"])
-    boxplot_df["gc_bin_center"] = boxplot_df["GC_Content_label"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
-    boxplot_groups = boxplot_df.groupby("gc_bin_center")["DNA_rep_comb"].apply(list)
-    gc_summary = boxplot_df.groupby("GC_Content_label", observed=False)["DNA_rep_comb"].agg(["count", "median"]).reset_index()
-    # Filter gc_summary to match only bins with data
-    #gc_summary = gc_summary[gc_summary["count"] > 0]
-    # Filter widths to match only bins with data
+    boxplot_df["gc_bin_center"] = boxplot_df["GC_Content_label"].apply(
+        lambda x: (float(x.left) + float(x.right)) / 2
+    )
+
+    boxplot_groups = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"]
+        .apply(list)
+    )
+
+    gc_summary = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"]
+        .agg(count="size", median="median")
+        .reset_index()
+    )
+
     bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
@@ -811,9 +832,18 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         boxprops=dict(facecolor=plot_color_pallete["read"]),
         medianprops=dict(color="black", linewidth=1),
     )
+
     ax_hist.set_ylabel("Number of reads")
+
     ax2 = ax_hist.twinx()
-    ax2.plot(boxplot_groups.index, gc_summary["count"], color=plot_color_pallete["cCRE"], marker="o", label="cCRE count")
+    ax2.plot(
+        gc_summary["gc_bin_center"],
+        gc_summary["count"],
+        color=plot_color_pallete["cCRE"],
+        marker="o",
+        label="cCRE count",
+    )
+
     ax2.set_ylabel("Number of cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
@@ -827,6 +857,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     ax_hist.set_xticks([0, 100])
     ax_hist.set_xticklabels(["0", "100"])
     f.set_size_inches(8, 8)
+
     return f, ax_hist
 
 
