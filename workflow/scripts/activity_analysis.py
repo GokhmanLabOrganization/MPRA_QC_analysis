@@ -119,7 +119,34 @@ def r_squared(y_true, y_pred):
 
 def vectorize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df = df[["RNA_rep1", "DNA_rep1", "RNA_rep2", "DNA_rep2", "RNA_rep3", "DNA_rep3"]]
+    
+    # Dynamically detect RNA and DNA columns
+    rep_nums = set()
+    for col in df.columns:
+        if col.startswith('RNA_rep') or col.startswith('DNA_rep'):
+            if '_rep' in col:
+                try:
+                    num = int(col.split('_rep')[1])
+                    rep_nums.add(num)
+                except (ValueError, IndexError):
+                    pass
+    
+    if not rep_nums:
+        raise ValueError("No RNA_rep or DNA_rep columns found in dataframe")
+    
+    # Only keep replicates that have BOTH RNA and DNA columns
+    reps = sorted([rep for rep in rep_nums if f'RNA_rep{rep}' in df.columns and f'DNA_rep{rep}' in df.columns])
+    
+    if not reps:
+        raise ValueError("No replicates with both RNA and DNA columns found")
+    
+    # Sort columns: RNA first, then DNA, organized by replicate number
+    cols_to_keep = []
+    for rep in reps:
+        cols_to_keep.append(f'RNA_rep{rep}')
+        cols_to_keep.append(f'DNA_rep{rep}')
+    
+    df = df[cols_to_keep]
 
     def safe_eval(x: Any) -> Any:
         if pd.isna(x):  # catches np.nan, pd.NA, None
@@ -448,9 +475,33 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
 
         activity_by_rep_df_ds = pd.read_csv(rep_path)
 
-        activity_by_rep_df_vectorized = activity_by_rep_df_ds[
-            ["RNA_rep1", "DNA_rep1", "RNA_rep2", "DNA_rep2", "RNA_rep3", "DNA_rep3"]
-        ]
+        # Dynamically detect RNA and DNA columns
+        rep_nums = set()
+        for col in activity_by_rep_df_ds.columns:
+            if col.startswith('RNA_rep') or col.startswith('DNA_rep'):
+                if '_rep' in col:
+                    try:
+                        num = int(col.split('_rep')[1])
+                        rep_nums.add(num)
+                    except (ValueError, IndexError):
+                        pass
+        
+        if not rep_nums:
+            raise ValueError(f"No RNA_rep or DNA_rep columns found in {rep_path}")
+        
+        # Only keep replicates that have BOTH RNA and DNA columns
+        reps = sorted([rep for rep in rep_nums if f'RNA_rep{rep}' in activity_by_rep_df_ds.columns and f'DNA_rep{rep}' in activity_by_rep_df_ds.columns])
+        
+        if not reps:
+            raise ValueError(f"No replicates with both RNA and DNA columns found in {rep_path}")
+        
+        # Sort columns: RNA first, then DNA, organized by replicate number
+        cols_to_keep = []
+        for rep in reps:
+            cols_to_keep.append(f'RNA_rep{rep}')
+            cols_to_keep.append(f'DNA_rep{rep}')
+
+        activity_by_rep_df_vectorized = activity_by_rep_df_ds[cols_to_keep]
 
         def safe_eval(x):
             if pd.isna(x):  # catches np.nan, pd.NA, None
