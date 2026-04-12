@@ -375,16 +375,37 @@ def retained_ccres_and_barcodes_plot(result_melted_df: pd.DataFrame) -> tuple[Fi
     return fig, ax
 
 
-def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, show_colorbar=True) -> tuple[Figure, Axes]:
+def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, show_colorbar=True, compare_rep1: str = None, compare_rep2: str = None) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith('RNA_DNA_ratio_log_rep'):
+            try:
+                num = int(col.split('_rep')[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for ratio correlation plot")
+    
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+    
     # Prepare the data
     # Replace Inf values with NaN, then drop any rows with NaN values
     activity_by_rep = activity_by_rep.replace([np.inf, -np.inf], np.nan)
 
-    # Drop rows where either 'ratio_log_rep1' or 'ratio_log_rep2' has NaN or Inf
-    activity_by_rep = activity_by_rep.dropna(subset=["RNA_DNA_ratio_log_rep1", "RNA_DNA_ratio_log_rep2"])
+    # Drop rows where either ratio column has NaN or Inf
+    activity_by_rep = activity_by_rep.dropna(subset=[f"RNA_DNA_ratio_log_{compare_rep1}", f"RNA_DNA_ratio_log_{compare_rep2}"])
 
-    x = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep1"].values)
-    y = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep2"].values)
+    x = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep1}"].values)
+    y = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep2}"].values)
     
     r = pearsonr(x, y)[0]
 
@@ -400,8 +421,8 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
         linewidths=0,
     )
 
-    ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
-    ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 2")
+    ax.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
+    ax.set_ylabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep2}")
     
     plt.text(
         0.05, 0.95, s=rf"r= {round(r,3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left"
@@ -419,15 +440,35 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
     return fig, ax
 
 
-def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
+def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos, compare_rep1: str = None, compare_rep2: str = None):
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith('RNA_DNA_ratio_log_rep'):
+            try:
+                num = int(col.split('_rep')[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for ratio correlation plot")
+    
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
 
     activity_by_rep = activity_by_rep.replace([np.inf, -np.inf], np.nan)
 
-    # Drop rows where either 'RNA_DNA_ratio_log_rep1' or 'RNA_DNA_ratio_log_rep2' has NaN or Inf
-    activity_by_rep = activity_by_rep.dropna(subset=["RNA_DNA_ratio_log_rep1", "RNA_DNA_ratio_log_rep2"])
+    # Drop rows where either ratio column has NaN or Inf
+    activity_by_rep = activity_by_rep.dropna(subset=[f"RNA_DNA_ratio_log_{compare_rep1}", f"RNA_DNA_ratio_log_{compare_rep2}"])
 
-    x = activity_by_rep["RNA_DNA_ratio_log_rep1"].values
-    y = activity_by_rep["RNA_DNA_ratio_log_rep2"].values
+    x = activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep1}"].values
+    y = activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep2}"].values
 
     fig, ax = plt.subplots()
 
@@ -446,14 +487,14 @@ def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
     hb.set_array(None)  # detach scalar mapping (important)
     hb.set_facecolors(np.tile(gray, (hb.get_offsets().shape[0], 1)))
 
-    ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
-    ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 2")
+    ax.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
+    ax.set_ylabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep2}")
 
     # --- Overlay controls (same as before) ---
     ax.scatter(
         data=activity_by_rep[activity_by_rep["cCRE"].isin(neg)],
-        x="RNA_DNA_ratio_log_rep1",
-        y="RNA_DNA_ratio_log_rep2",
+        x=f"RNA_DNA_ratio_log_{compare_rep1}",
+        y=f"RNA_DNA_ratio_log_{compare_rep2}",
         s=15,
         label="negative control",
         color=neg_active_ctrl_color,
@@ -463,8 +504,8 @@ def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
 
     ax.scatter(
         data=activity_by_rep[activity_by_rep["cCRE"].isin(pos)],
-        x="RNA_DNA_ratio_log_rep1",
-        y="RNA_DNA_ratio_log_rep2",
+        x=f"RNA_DNA_ratio_log_{compare_rep1}",
+        y=f"RNA_DNA_ratio_log_{compare_rep2}",
         s=15,
         label="positive control",
         color=pos_active_ctrl_color,
@@ -678,12 +719,33 @@ def merge_edge_bins(x, edges, min_count):
     return edges
 
 
-def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.DataFrame) -> tuple[Figure, Axes]:
+def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.DataFrame, compare_rep1: str = None, compare_rep2: str = None) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith('RNA_DNA_ratio_log_rep'):
+            try:
+                num = int(col.split('_rep')[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for replicability plot")
+    
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+    
     merged_df = activity_by_rep.merge(act_df, left_on="cCRE", right_on="cCRE", how="inner")
     merged_df["activity_status"].value_counts()
 
-    x = merged_df["RNA_DNA_ratio_log_rep1"]
-    y = merged_df["RNA_DNA_ratio_log_rep2"]
+    x = merged_df[f"RNA_DNA_ratio_log_{compare_rep1}"]
+    y = merged_df[f"RNA_DNA_ratio_log_{compare_rep2}"]
     g = merged_df["activity_status"]
     df = pd.DataFrame({"x": x, "y": y, "activity": g}).dropna()
 
@@ -758,7 +820,7 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
         zorder=3,
     )
 
-    ax1.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
+    ax1.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
 
     ax1.set_ylabel(f"Pearson's correlation (r)")
     ax1.axhline(0, color="gray", linestyle="--", lw=1)
