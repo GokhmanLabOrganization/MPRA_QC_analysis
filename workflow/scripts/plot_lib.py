@@ -1103,11 +1103,33 @@ def ccre_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_ccre: pd.Da
     return fig, ax
 
 
-def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
+def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame, compare_rep1: str = None, compare_rep2: str = None) -> tuple[Figure, Axes]:
     # Define parameters
     outlier_filters = ["no_filter", "filtered_std3", "filtered_std2"]
     dna_thresholds = [0, 10, 25]
-    reps = ["rep1", "rep2", "rep3"]
+    
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in noise_df.columns:
+        if 'ratio_log_' in col and '_rep' in col:
+            parts = col.split('_rep')
+            if len(parts) > 1:
+                try:
+                    num = int(parts[1])
+                    rep_nums.add(num)
+                except ValueError:
+                    pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for hexbin plot")
+    
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
 
     # Plot settings
     gridsize = 100
@@ -1142,11 +1164,11 @@ def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
             # Drop NaNs
             df_plot = noise_df.dropna(
-                subset=[f"ratio_{outlier_filter}_rep1_DNA_{threshold}", f"ratio_{outlier_filter}_rep2_DNA_{threshold}"]
+                subset=[f"ratio_{outlier_filter}_{compare_rep1}_DNA_{threshold}", f"ratio_{outlier_filter}_{compare_rep2}_DNA_{threshold}"]
             )
 
-            x = df_plot[f"ratio_{outlier_filter}_rep1_DNA_{threshold}"].to_numpy(dtype=float)
-            y = df_plot[f"ratio_{outlier_filter}_rep2_DNA_{threshold}"].to_numpy(dtype=float)
+            x = df_plot[f"ratio_{outlier_filter}_{compare_rep1}_DNA_{threshold}"].to_numpy(dtype=float)
+            y = df_plot[f"ratio_{outlier_filter}_{compare_rep2}_DNA_{threshold}"].to_numpy(dtype=float)
 
             hb = None
             if x.size > 0 and y.size > 0:
@@ -1466,9 +1488,32 @@ def cell_types_hexbin_plot(cell_type_df: pd.DataFrame, colorbar: bool) -> tuple[
     return fig, ax
 
 
-def diff_activity_corr_reps_hexbin_plot(pair_rep_df: pd.DataFrame, colorbar: bool) -> tuple[Figure, Axes]:
-    x = np.asarray(pair_rep_df["LFC_rep1"].values)
-    y = np.asarray(pair_rep_df["LFC_rep2"].values)
+def diff_activity_corr_reps_hexbin_plot(pair_rep_df: pd.DataFrame, colorbar: bool, compare_rep1: str = None, compare_rep2: str = None) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in pair_rep_df.columns:
+        if col.startswith('LFC_rep'):
+            parts = col.split('_rep')
+            if len(parts) > 1:
+                try:
+                    num = int(parts[1])
+                    rep_nums.add(num)
+                except ValueError:
+                    pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for hexbin plot")
+    
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+
+    x = np.asarray(pair_rep_df[f"LFC_{compare_rep1}"].values)
+    y = np.asarray(pair_rep_df[f"LFC_{compare_rep2}"].values)
     fig, ax = plt.subplots()
 
     hb = ax.hexbin(
