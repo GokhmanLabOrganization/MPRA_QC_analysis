@@ -756,9 +756,10 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
     min_active = df.loc[df["mask"], "x"].min()
     max_active = df.loc[df["mask"], "x"].max()
     bins_non_active = np.linspace(
-        np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active))
+        np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active)+1)
     )
-    bins_active = np.linspace(np.floor(min_active), np.ceil(max_active), int((np.ceil(max_active)) - np.floor(min_active)))
+    bins_active = np.linspace(np.floor(min_active), np.ceil(max_active), int((np.ceil(max_active)) - np.floor(min_active)+1)
+                              )
 
     n_min = 30  # or whatever you decide
 
@@ -779,7 +780,7 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
         mean_y = np.mean(group["y"])
         std_y = np.std(group["y"], ddof=1)
         cv_y = (std_y / abs(mean_y)) * 100 if mean_y != 0 else np.nan
-        mid = group["x"].median()
+        mid = b.mid if pd.notna(b) else np.nan
         active_flag = group["mask"].iloc[0]
         results.append({"bin": str(b), "mid_x": mid, "corr": r, "cv": cv_y, "n": len(group), "activity_flag": active_flag})
 
