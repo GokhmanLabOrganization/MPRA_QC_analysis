@@ -31,6 +31,7 @@ jobs:
           VALIDATE_YAML: true
           YAML_CONFIG_FILE: .yamllint.yml
           VALIDATE_SNAKEMAKE_SNAKEFMT: true
+          SNAKEMAKE_SNAKEFMT_CONFIG_FILE: pyproject.toml
           SAVE_SUPER_LINTER_SUMMARY: true
 
   Linting:

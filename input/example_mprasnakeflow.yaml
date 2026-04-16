@@ -1,0 +1,15 @@
+---
+project: MyProjectUsingMPRAsnakeflow
+association: input/example_association.tsv
+activity: input/example_activity.tsv
+mprasnakeflow:
+  assignment:
+    barcodes_incl_other: <mprasnakeflow_output>/results/assignment/<assignment_name>/barcodes_incl_other.tsv.gz
+    assignment_barcodes_with_ambiguous: <mprasnakeflow_output>/results/assignment/<assignment_name>/assignment_barcodes_with_ambiguous.<assignment_config>.tsv.gz
+    bc_length: 15 # specify your barcode length here
+  experiment:
+    reporter_experiment_barcode: <mprasnakeflow_output>/results/experiment/reporter_experiment.barcode.<experiment_name>.<assignment_name>.<experiment_config>.all.tsv.gz
+    labels: <path_to_your_element_file>/element_labels.tsv.gz # see documentation about this file. Only needed for activity analysis.
+    test_label: test # specify the label for the test group in your element file
+    control_label: negative # specify the label for the control group in your element file
+    comparative_map: <path_to_your_comparative_map_file>/variant_map.tsv.gz # see documentation about this file. Only needed for activity analysis.

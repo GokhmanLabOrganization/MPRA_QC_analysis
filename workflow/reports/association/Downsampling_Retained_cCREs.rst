@@ -1,0 +1,3 @@
+**Legend:** Sequencing depth vs retained cCREs. Sequencing data is downsampled in order to assess whether we have reached saturation in the percentage of retained cCREs. Then, data is extrapolated to predict whether additional sequencing will help improve the results.
+
+**Interpretation:** The successful example showcases a high-complexity experiment: additional sequencing is not predicted to improve the percentage of retained cCREs. The unsuccessful example showcases an experiment where sequencing depth was suboptimal: additional sequencing is predicted to improve the percentage of retained cCREs.

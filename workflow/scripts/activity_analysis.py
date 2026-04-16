@@ -1,6 +1,6 @@
 import ast  # for safe eveal, for parsing some of the data
 import os
-from typing import Any
+from typing import Any, Iterable
 
 import click
 import const  # to reload use import(importlib) and then importlib.reload(const)
@@ -119,33 +119,33 @@ def r_squared(y_true, y_pred):
 
 def vectorize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    
+
     # Dynamically detect RNA and DNA columns
     rep_nums = set()
     for col in df.columns:
-        if col.startswith('RNA_rep') or col.startswith('DNA_rep'):
-            if '_rep' in col:
+        if col.startswith("RNA_rep") or col.startswith("DNA_rep"):
+            if "_rep" in col:
                 try:
-                    num = int(col.split('_rep')[1])
+                    num = int(col.split("_rep")[1])
                     rep_nums.add(num)
                 except (ValueError, IndexError):
                     pass
-    
+
     if not rep_nums:
         raise ValueError("No RNA_rep or DNA_rep columns found in dataframe")
-    
+
     # Only keep replicates that have BOTH RNA and DNA columns
-    reps = sorted([rep for rep in rep_nums if f'RNA_rep{rep}' in df.columns and f'DNA_rep{rep}' in df.columns])
-    
+    reps = sorted([rep for rep in rep_nums if f"RNA_rep{rep}" in df.columns and f"DNA_rep{rep}" in df.columns])
+
     if not reps:
         raise ValueError("No replicates with both RNA and DNA columns found")
-    
+
     # Sort columns: RNA first, then DNA, organized by replicate number
     cols_to_keep = []
     for rep in reps:
-        cols_to_keep.append(f'RNA_rep{rep}')
-        cols_to_keep.append(f'DNA_rep{rep}')
-    
+        cols_to_keep.append(f"RNA_rep{rep}")
+        cols_to_keep.append(f"DNA_rep{rep}")
+
     df = df[cols_to_keep]
 
     def safe_eval(x: Any) -> Any:
@@ -366,7 +366,7 @@ def plot_Replicability_by_activity(activity_by_rep: pd.DataFrame, act_df: pd.Dat
 
 
 def plot_ratio_correlation_with_controls(
-    activity_by_rep: pd.DataFrame, neg: pd.DataFrame, pos: pd.DataFrame, output_path: str
+    activity_by_rep: pd.DataFrame, neg: Iterable[Any], pos: Iterable[Any], output_path: str
 ) -> None:
 
     fig, _ = plot_lib.ratio_correlation_with_controls_plot(activity_by_rep, neg, pos)
@@ -388,7 +388,9 @@ def plot_RNA_DNA_ratio_hexbin(act_df: pd.DataFrame, output_path: str) -> None:
     click.echo("RNA_vs_DNA DONE")
 
 
-def plot_control_boxplots(act_df: pd.DataFrame, neg: pd.DataFrame, pos: pd.DataFrame, test: str, output_path: str) -> None:
+def plot_control_boxplots(
+    act_df: pd.DataFrame, neg: Iterable[Any], pos: Iterable[Any], test: Iterable[Any], output_path: str
+) -> None:
 
     fig, _ = plot_lib.control_boxplots_plot(act_df, neg, pos, test)
     const.save_fig(fig, "Activity_of_controls", output_path)
@@ -478,28 +480,34 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
         # Dynamically detect RNA and DNA columns
         rep_nums = set()
         for col in activity_by_rep_df_ds.columns:
-            if col.startswith('RNA_rep') or col.startswith('DNA_rep'):
-                if '_rep' in col:
+            if col.startswith("RNA_rep") or col.startswith("DNA_rep"):
+                if "_rep" in col:
                     try:
-                        num = int(col.split('_rep')[1])
+                        num = int(col.split("_rep")[1])
                         rep_nums.add(num)
                     except (ValueError, IndexError):
                         pass
-        
+
         if not rep_nums:
             raise ValueError(f"No RNA_rep or DNA_rep columns found in {rep_path}")
-        
+
         # Only keep replicates that have BOTH RNA and DNA columns
-        reps = sorted([rep for rep in rep_nums if f'RNA_rep{rep}' in activity_by_rep_df_ds.columns and f'DNA_rep{rep}' in activity_by_rep_df_ds.columns])
-        
+        reps = sorted(
+            [
+                rep
+                for rep in rep_nums
+                if f"RNA_rep{rep}" in activity_by_rep_df_ds.columns and f"DNA_rep{rep}" in activity_by_rep_df_ds.columns
+            ]
+        )
+
         if not reps:
             raise ValueError(f"No replicates with both RNA and DNA columns found in {rep_path}")
-        
+
         # Sort columns: RNA first, then DNA, organized by replicate number
         cols_to_keep = []
         for rep in reps:
-            cols_to_keep.append(f'RNA_rep{rep}')
-            cols_to_keep.append(f'DNA_rep{rep}')
+            cols_to_keep.append(f"RNA_rep{rep}")
+            cols_to_keep.append(f"DNA_rep{rep}")
 
         activity_by_rep_df_vectorized = activity_by_rep_df_ds[cols_to_keep]
 
@@ -680,9 +688,9 @@ def control_boxplots(activity_file: str, controls_file: str, output_path: str) -
     activity_df = pd.read_csv(activity_file)
     control_df = pd.read_csv(controls_file)
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
-    pos_olg = group_dict["positive_ctrl"]
-    neg_olg = group_dict["negative_ctrl"]
-    test_olg = group_dict["test_cCRE"]
+    pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
+    neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
+    test_olg = group_dict["test_cCRE"] if "test_cCRE" in group_dict else []
     plot_control_boxplots(activity_df, neg_olg, pos_olg, test_olg, output_path)
 
 
@@ -817,8 +825,8 @@ def ratio_correlation_with_controls(activity_per_rep_file: str, controls_file: s
     activity_by_rep_df = pd.read_csv(activity_per_rep_file)
     control_df = pd.read_csv(controls_file)
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
-    pos_olg = group_dict["positive_ctrl"]
-    neg_olg = group_dict["negative_ctrl"]
+    pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
+    neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
     plot_ratio_correlation_with_controls(activity_by_rep_df, pos_olg, neg_olg, output_path)
 
 

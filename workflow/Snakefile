@@ -36,7 +36,7 @@ min_version("8.24.1")
 
 
 ##### report workflow #####
-report: "report/workflow.rst"
+report: "reports/workflow.rst"
 
 
 ##### General wildcard constraints #####
@@ -99,9 +99,7 @@ General all rule to get all output files for MPRA QC analysis (default rule).
             + get_activity_sample_clusters_plots(activity_files),
             file_type=["pdf", "eps", "png", "svg"],
             project=config["project"],
-        )
-        if "activity" in config
-        else [],
+        ),
 
 
 rule all_association:
@@ -147,9 +145,7 @@ All rule to get all output files for the activity workflow.
             + get_activity_sample_clusters_plots(activity_files),
             file_type=["pdf", "eps", "png", "svg"],
             project=config["project"],
-        )
-        if "activity" in config
-        else [],
+        ),
 
 
 ###################
@@ -157,6 +153,9 @@ All rule to get all output files for the activity workflow.
 ###################
 
 
+# mprasnakeflow preprocessing rules
+include: "rules/preprocessing/mprasnakeflow/assignment.smk"
+include: "rules/preprocessing/mprasnakeflow/experiment.smk"
 # association workflow
 include: "rules/association.smk"
 # activity workflow

@@ -19,6 +19,96 @@ properties:
   activity:
     description: Path to the activity file, which contains paths to the files needed for the activity step.
     type: string
+  mprasnakeflow:
+    description: Paths to the files from mprasnakeflow to use them for preprocessing to input files for the association and activity steps.
+    type: object
+    properties:
+      assignment:
+        description: Paths to the files from mprasnakeflow to use them for preprocessing to input files for the association step.
+        type: object
+        properties:
+          barcodes_incl_other:
+            description: Path to the file containing the barcode assignments from mprasnakeflow, including those that were not included in the final associations.
+            type: string
+          assignment_barcodes_with_ambiguous:
+            description: Path to the file containing the barcode assignments from mprasnakeflow, including ambiguous assignments.
+            type: string
+          fraction:
+            description: Fraction threshold for filtering associations (default 0.75).
+            type: number
+            default: 0.75
+          min_support:
+            description: Minimum support of observed barcodes per oligo for filtering associations (default 3).
+            type: integer
+            default: 3
+          bc_length:
+            description: Length of the barcodes.
+            type: integer
+        additionalProperties: false
+        required:
+          - barcodes_incl_other
+          - assignment_barcodes_with_ambiguous
+          - fraction
+          - min_support
+          - bc_length
+      experiment:
+        description: Paths to the files from mprasnakeflow to use them for preprocessing to input files for the activity step.
+        type: object
+        properties:
+          reporter_experiment_barcode:
+            description: Path to the file containing the reporter experiment barcode counts from mprasnakeflow.
+            type: string
+          labels:
+            description: Path to the file containing the labels for the reporter experiment from mprasnakeflow.
+            type: string
+          test_label:
+            description: Name of the test group in the labels file (e.g. test).
+            type: string
+          control_label:
+            description: Name of the control group in the labels file (e.g. control).
+            type: string
+          normalize:
+            description: Whether to normalize the activity values (default true).
+            type: boolean
+            default: true
+          fdr:
+            description: False discovery rate to use for filtering (default 0.1).
+            type: number
+            default: 0.1
+          comparative_map:
+            description: Path to the file containing the comparative map to contrast two conditions (like variants).
+            type: string
+        additionalProperties: false
+        anyOf:
+          - required:
+              - reporter_experiment_barcode
+              - labels
+              - test_label
+              - control_label
+              - fdr
+              - normalize
+          - required:
+              - reporter_experiment_barcode
+              - normalize
+              - fdr
+              - comparative_map
+          - required:
+              - reporter_experiment_barcode
+              - labels
+              - test_label
+              - control_label
+              - fdr
+              - normalize
+              - comparative_map
+    additionalProperties: false
+    anyOf:
+      - required:
+          - assignment
+      - required:
+          - experiment
+      - required:
+          - assignment
+          - experiment
 additionalProperties: false
 anyOf:
   - required:
@@ -30,4 +120,17 @@ anyOf:
   - required:
       - project
       - association
+      - mprasnakeflow
+  - required:
+      - project
       - activity
+      - mprasnakeflow
+  - required:
+      - project
+      - association
+      - activity
+  - required:
+      - project
+      - association
+      - activity
+      - mprasnakeflow
