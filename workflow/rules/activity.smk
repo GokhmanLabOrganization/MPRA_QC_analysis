@@ -14,7 +14,62 @@ rule activity_main:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_main_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Activity_distribution.png",
+            caption=getReport("activity/Activity_distribution.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Distribution",
+                "figure": "Activity Distribution",
+            },
+        ),
+        report(
+            "results/{project}/activity/P_value_distribution.png",
+            caption=getReport("activity/P_value_distribution.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Distribution",
+                "figure": "P-Value Distribution",
+            },
+        ),
+        report(
+            "results/{project}/activity/Cumulative_RNA_reads.png",
+            caption=getReport("activity/Cumulative_RNA_reads.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Distribution",
+                "figure": "Cumulative RNA Reads",
+            },
+        ),
+        report(
+            "results/{project}/activity/RNA_vs_DNA_w_bar.png",
+            caption=getReport("activity/RNA_vs_DNA_w_bar.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Sanity check",
+                "figure": "RNA vs DNA",
+            },
+        ),
+        report(
+            "results/{project}/activity/Activity_statistic_vs_count_ratio.png",
+            caption=getReport("activity/Activity_statistic_vs_count_ratio.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Sanity check",
+                "figure": "Activity Statistic vs Count Ratio",
+            },
         ),
     log:
         "logs/activity/main.{project}.log",
@@ -24,7 +79,8 @@ rule activity_main:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity main --activity {input.activity} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity main \
+        --activity {input.activity} --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -49,7 +105,18 @@ rule activity_control_boxplots:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_control_boxplots_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Activity_of_controls.png",
+            caption=getReport("activity/Activity_of_controls.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Controls",
+                "figure": "Activity of Controls",
+            },
         ),
     log:
         "logs/activity/control_boxplots.{project}.log",
@@ -84,7 +151,18 @@ rule activity_replicability_by_activity:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_replicability_by_activity_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Replicability_by_activity.png",
+            caption=getReport("activity/Replicability_by_activity.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Reproducibility",
+                "figure": "Replicability by Activity",
+            },
         ),
     log:
         "logs/activity/replicability_by_activity.{project}.log",
@@ -119,7 +197,18 @@ rule activity_gc_content_bias:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_gc_content_bias_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/DNA_counts_vs_GC_content.png",
+            caption=getReport("activity/DNA_counts_vs_GC_content.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Bias",
+                "figure": "GC Content",
+            },
         ),
     log:
         "logs/activity/gc_content_bias.{project}.log",
@@ -148,10 +237,33 @@ rule activity_ratio_correlation_between_replicates:
     output:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
-            plot=get_activity_ratio_correlation_between_replicates_plots(
-                activity_files
-            ),
-            file_type=["pdf", "eps", "png", "svg"],
+            plot=get_activity_ratio_correlation_between_replicates_plots(activity_files),
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Retained_cCREs_and_BCs.png",
+            caption=getReport("activity/Retained_cCREs_and_BCs.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Retention",
+                "figure": "Retained cCREs and BCs",
+            },
+        ),
+        report(
+            [
+                "results/{project}/activity/Correlation_between_replicates.png",
+                "results/{project}/activity/Correlation_between_replicates_w_bar.png",
+            ],
+            caption=getReport("activity/Correlation_between_replicates.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Reproducibility",
+                "figure": "Correlation between Replicates",
+            },
         ),
     log:
         "logs/activity/ratio_correlation_between_replicates.{project}.log",
@@ -186,7 +298,18 @@ rule activity_ratio_correlation_with_controls:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_ratio_correlation_with_controls_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Correlation_between_replicates_controls.png",
+            caption=getReport("activity/Correlation_between_replicates_controls.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Activity",
+                "type": "Reproducibility",
+                "figure": "Correlation with Controls",
+            },
         ),
     log:
         "logs/activity/ratio_correlation_with_controls.{project}.log",
@@ -216,7 +339,18 @@ rule activity_downsampling:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_downsampling_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Activity_by_sequencing_depth.png",
+            caption=getReport("activity/Activity_by_sequencing_depth.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Downsampling",
+                "type": "Activity",
+                "figure": "Activity by Sequencing Depth",
+            },
         ),
     log:
         "logs/activity/downsampling.{project}.log",
@@ -245,10 +379,30 @@ rule activity_reproducibility_by_sequencing_depth:
     output:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
-            plot=get_activity_reproducibility_by_sequencing_depth_plots(
-                activity_files
-            ),
-            file_type=["pdf", "eps", "png", "svg"],
+            plot=get_activity_reproducibility_by_sequencing_depth_plots(activity_files),
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/BC_retention_by_DNA_RNA_sequencing_depth.png",
+            caption=getReport("activity/BC_retention_by_DNA_RNA_sequencing_depth.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Downsampling",
+                "type": "Retention",
+                "figure": "BC Retention by Sequencing Depth",
+            },
+        ),
+        report(
+            "results/{project}/activity/cCRE_retention_by_DNA_RNA_sequencing_depth.png",
+            caption=getReport("activity/cCRE_retention_by_DNA_RNA_sequencing_depth.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Downsampling",
+                "type": "Retention",
+                "figure": "cCRE Retention by Sequencing Depth",
+            },
         ),
     log:
         "logs/activity/reproducibility_by_sequencing_depth.{project}.log",
@@ -278,7 +432,18 @@ rule activity_mimimise_noise:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_mimimise_noise_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Minimizing_noise.png",
+            caption=getReport("activity/Minimizing_noise.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Outliers",
+                "type": "Reproducibility",
+                "figure": "Minimizing Noise",
+            },
         ),
     log:
         "logs/activity/minimise_noise.{project}.log",
@@ -308,7 +473,18 @@ rule activity_screen_annotations:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_screen_annotations_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Genomic_annotations.png",
+            caption=getReport("activity/Genomic_annotations.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Annotations",
+                "type": "Activity",
+                "figure": "Genomic",
+            },
         ),
     log:
         "logs/activity/screen_annotations.{project}.log",
@@ -338,7 +514,18 @@ rule activity_tss_proximity:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_tss_proximity_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Proximity_to_TSS.png",
+            caption=getReport("activity/Proximity_to_TSS.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Annotations",
+                "type": "Activity",
+                "figure": "Proximity to TSS",
+            },
         ),
     log:
         "logs/activity/tss_proximity.{project}.log",
@@ -368,7 +555,21 @@ rule activity_prediction_vs_activity:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_prediction_vs_activity_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/AI_predictions_vs_activity.png",
+                "results/{project}/activity/AI_predictions_vs_activity_w_bar.png",
+            ],
+            caption=getReport("activity/AI_predictions_vs_activity.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Prediction",
+                "type": "Activity",
+                "figure": "Predictions vs Activity",
+            },
         ),
     log:
         "logs/activity/prediction_vs_activity.{project}.log",
@@ -397,10 +598,22 @@ rule activity_prediction_vs_differential_activity:
     output:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
-            plot=get_activity_prediction_vs_differential_activity_plots(
-                activity_files
-            ),
-            file_type=["pdf", "eps", "png", "svg"],
+            plot=get_activity_prediction_vs_differential_activity_plots(activity_files),
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/AI_predictions_vs_differential_activity.png",
+                "results/{project}/activity/AI_predictions_vs_differential_activity_w_bar.png",
+            ],
+            caption=getReport("activity/AI_predictions_vs_differential_activity.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Prediction",
+                "type": "Comparative",
+                "figure": "Predictions vs Differential Activity",
+            },
         ),
     log:
         "logs/activity/prediction_vs_differential_activity.{project}.log",
@@ -410,7 +623,8 @@ rule activity_prediction_vs_differential_activity:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity prediction-vs-differential-activity --differential-activity-prediction {input.differential_activity_prediction} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity prediction-vs-differential-activity \
+        --differential-activity-prediction {input.differential_activity_prediction} --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -430,7 +644,32 @@ rule activity_comparative:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_comparative_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/Volcano_plot_FC_vs_Pval_zoom.png",
+                "results/{project}/activity/Volcano_plot_FC_vs_Pval.png",
+            ],
+            caption=getReport("activity/Volcano_plot_FC_vs_Pval.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Comparative",
+                "type": "P-Value",
+                "figure": "Volcano",
+            },
+        ),
+        report(
+            "results/{project}/activity/Differential_activity_distribution.png",
+            caption=getReport("activity/Differential_activity_distribution.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Comparative",
+                "type": "Activity",
+                "figure": "Differential activity distribution",
+            },
         ),
     log:
         "logs/activity/comparative.{project}.log",
@@ -440,7 +679,8 @@ rule activity_comparative:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity comparative --differential-activity {input.differential_activity} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity comparative \
+        --differential-activity {input.differential_activity} --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -460,7 +700,21 @@ rule activity_allelic_pairs:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_allelic_pairs_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/Cross_validation_allelic_pairs.png",
+                "results/{project}/activity/Cross_validation_allelic_pairs_w_bar.png",
+            ],
+            caption=getReport("activity/Cross_validation_allelic_pairs.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Comparative",
+                "type": "Reproducibility",
+                "figure": "Cross validation: allelic pairs",
+            },
         ),
     log:
         "logs/activity/allelic_pairs.{project}.log",
@@ -470,7 +724,8 @@ rule activity_allelic_pairs:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity allelic-pairs --allelic-pairs {input.allelic_pairs} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity allelic-pairs \
+        --allelic-pairs {input.allelic_pairs} --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -490,7 +745,21 @@ rule activity_cell_types:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_cell_types_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/Cross_validation_cell_types.png",
+                "results/{project}/activity/Cross_validation_cell_types_w_bar.png",
+            ],
+            caption=getReport("activity/Cross_validation_cell_types.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Cross validation",
+                "type": "Reproducibility",
+                "figure": "Cross validation: cell types",
+            },
         ),
     log:
         "logs/activity/cell_types.{project}.log",
@@ -500,7 +769,7 @@ rule activity_cell_types:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity cell-types --cell-types {input.cell_types} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity cell-types --cell-types {input.cell_types} --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -520,7 +789,21 @@ rule activity_comparative_replicates:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_comparative_replicates_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            [
+                "results/{project}/activity/Correlation_of_differential_activity_between_replicates.png",
+                "results/{project}/activity/Correlation_of_differential_activity_between_replicates_w_bar.png",
+            ],
+            caption=getReport("activity/Correlation_of_differential_activity_between_replicates.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Comparative",
+                "type": "Reproducibility",
+                "figure": "Correlation of differential activity",
+            },
         ),
     log:
         "logs/activity/comparative_replicates.{project}.log",
@@ -530,7 +813,9 @@ rule activity_comparative_replicates:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity comparative-replicates --differential-activity-replicates {input.differential_activity_replicates} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity comparative-replicates \
+        --differential-activity-replicates {input.differential_activity_replicates} \
+        --output-path {params.outdir} > {log} 2>&1
         """
 
 
@@ -555,7 +840,18 @@ rule activity_sample_clusters:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_sample_clusters_plots(activity_files),
-            file_type=["pdf", "eps", "png", "svg"],
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Sample_clustering.png",
+            caption=getReport("activity/Sample_clustering.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Cross validation",
+                "type": "Reproducibility",
+                "figure": "Sample clusters",
+            },
         ),
     log:
         "logs/activity/sample_clusters.{project}.log",
@@ -565,5 +861,7 @@ rule activity_sample_clusters:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity sample-clusters --reads-by-group {input.reads_by_group} --sample-metadata {input.sample_metadata} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity sample-clusters \
+        --reads-by-group {input.reads_by_group} --sample-metadata {input.sample_metadata} \
+        --output-path {params.outdir} > {log} 2>&1
         """

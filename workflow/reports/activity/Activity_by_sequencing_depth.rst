@@ -1,0 +1,3 @@
+**Legend:** The relationship between sequencing depth and the percentage of active cCREs. Data is downsampled in order to assess whether we have reached saturation in the percentage of active cCREs. Then, data is extrapolated to predict whether additional sequencing would help improve the results.
+
+**Interpretation:** The successful example showcases sufficient sequencing depth: the percentage of active cCREs has reached a plateau, and more sequencing is not expected to affect it. The unsuccessful example showcases suboptimal RNA sequencing depth: additional sequencing will likely affect the percentage of active cCREs.

@@ -36,7 +36,7 @@ min_version("8.24.1")
 
 
 ##### report workflow #####
-report: "report/workflow.rst"
+report: "reports/workflow.rst"
 
 
 ##### General wildcard constraints #####
@@ -81,9 +81,9 @@ General all rule to get all output files for MPRA QC analysis (default rule).
             "results/{project}/activity/{plot}.{file_type}",
             plot=get_activity_main_plots(activity_files)
             + get_activity_control_boxplots_plots(activity_files)
-            # + get_activity_replicability_by_activity_plots(activity_files)
+            + get_activity_replicability_by_activity_plots(activity_files)
             + get_activity_gc_content_bias_plots(activity_files)
-            # + get_activity_ratio_correlation_between_replicates_plots(activity_files)
+            + get_activity_ratio_correlation_between_replicates_plots(activity_files)
             + get_activity_ratio_correlation_with_controls_plots(activity_files)
             + get_activity_downsampling_plots(activity_files)
             + get_activity_reproducibility_by_sequencing_depth_plots(activity_files)
@@ -93,15 +93,13 @@ General all rule to get all output files for MPRA QC analysis (default rule).
             + get_activity_prediction_vs_activity_plots(activity_files)
             + get_activity_prediction_vs_differential_activity_plots(activity_files)
             + get_activity_comparative_plots(activity_files)
-            # + get_activity_allelic_pairs_plots(activity_files)
+            + get_activity_allelic_pairs_plots(activity_files)
             + get_activity_cell_types_plots(activity_files)
             + get_activity_comparative_replicates_plots(activity_files)
             + get_activity_sample_clusters_plots(activity_files),
             file_type=["pdf", "eps", "png", "svg"],
             project=config["project"],
-        )
-        if "activity" in config
-        else [],
+        ),
 
 
 rule all_association:
@@ -129,9 +127,9 @@ All rule to get all output files for the activity workflow.
             "results/{project}/activity/{plot}.{file_type}",
             plot=get_activity_main_plots(activity_files)
             + get_activity_control_boxplots_plots(activity_files)
-            # + get_activity_replicability_by_activity_plots(activity_files)
+            + get_activity_replicability_by_activity_plots(activity_files)
             + get_activity_gc_content_bias_plots(activity_files)
-            # + get_activity_ratio_correlation_between_replicates_plots(activity_files)
+            + get_activity_ratio_correlation_between_replicates_plots(activity_files)
             + get_activity_ratio_correlation_with_controls_plots(activity_files)
             + get_activity_downsampling_plots(activity_files)
             + get_activity_reproducibility_by_sequencing_depth_plots(activity_files)
@@ -141,15 +139,13 @@ All rule to get all output files for the activity workflow.
             + get_activity_prediction_vs_activity_plots(activity_files)
             + get_activity_prediction_vs_differential_activity_plots(activity_files)
             + get_activity_comparative_plots(activity_files)
-            # + get_activity_allelic_pairs_plots(activity_files)
+            + get_activity_allelic_pairs_plots(activity_files)
             + get_activity_cell_types_plots(activity_files)
             + get_activity_comparative_replicates_plots(activity_files)
             + get_activity_sample_clusters_plots(activity_files),
             file_type=["pdf", "eps", "png", "svg"],
             project=config["project"],
-        )
-        if "activity" in config
-        else [],
+        ),
 
 
 ###################
@@ -157,6 +153,9 @@ All rule to get all output files for the activity workflow.
 ###################
 
 
+# mprasnakeflow preprocessing rules
+include: "rules/preprocessing/mprasnakeflow/assignment.smk"
+include: "rules/preprocessing/mprasnakeflow/experiment.smk"
 # association workflow
 include: "rules/association.smk"
 # activity workflow

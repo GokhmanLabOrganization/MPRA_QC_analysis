@@ -1,0 +1,12 @@
+---
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - r-base
+  - r-bcalm
+  - r-argparse
+  - r-dplyr
+  - r-ggplot2
+  - r-tidyr
+  - r-tibble

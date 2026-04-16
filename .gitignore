@@ -61,3 +61,5 @@ Thumbs.db
 !workflow/**
 workflow/scripts/__pycache__
 *results
+*logs
+*.html

@@ -1,5 +1,5 @@
 file	path
-cCRE_fasta	/path/to/input/files/sample_inputs/cCRE_fasta.fasta
+cCRE_fasta	/path/to/input/files/sample_inputs/cCRE_fasta2.fasta
 activity_df	/path/to/input/files/sample_inputs/activity_df.csv
 activity_per_rep	/path/to/input/files/sample_inputs/activity_per_rep.csv
 std_analysis_df	/path/to/input/files/sample_inputs/std_analthis sysis_df.csv

@@ -1,4 +1,5 @@
 import math
+from typing import Any, Iterable, Sequence
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -45,7 +46,6 @@ def _hill_model(x: np.ndarray, a: float, b: float, n: float) -> np.ndarray:
 
 
 def BCs_per_cCRE_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    plt.clf()
     fig, ax_ecdf = plt.subplots()
     sns.ecdfplot(x=final_counts_df["barcode_count"], color=plot_color_pallete["barcode"], ax=ax_ecdf)
 
@@ -90,8 +90,7 @@ def BCs_per_cCRE_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     return fig, ax_ecdf
 
 
-def Reads_per_association_plot(before_min_assoc_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    plt.clf()
+def reads_per_association_plot(before_min_assoc_df: pd.DataFrame) -> tuple[Figure, Axes]:
     fig, ax_hist = plt.subplots()
     bin_width = 0.5
     min_val = 0
@@ -103,7 +102,7 @@ def Reads_per_association_plot(before_min_assoc_df: pd.DataFrame) -> tuple[Figur
         x="match_count",
         ax=ax_hist,
         color=plot_color_pallete["cCRE-barcode-pair"],
-        bins=bin_edges,
+        bins=bin_edges.tolist(),
         stat="percent",
     )
     ax_hist.set_xlabel("Number of Molecules")
@@ -115,8 +114,7 @@ def Reads_per_association_plot(before_min_assoc_df: pd.DataFrame) -> tuple[Figur
     return fig, ax_hist
 
 
-def Retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set) -> tuple[Figure, Axes]:
-    plt.clf()
+def retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set) -> tuple[Figure, Axes]:
     bc_thresholds = np.arange(0, 100, 1)
     oligo_counts = []
     for thr in bc_thresholds:
@@ -126,7 +124,7 @@ def Retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set) -> 
     bc_thr_df = pd.DataFrame(data={"threshold": bc_thresholds, "perc": oligo_counts})
 
     fig, ax = plt.subplots()
-    sns.lineplot(data=bc_thr_df, x="threshold", y="perc", color=plot_color_pallete["cCRE"], linewidth=3)
+    sns.lineplot(data=bc_thr_df, x="threshold", y="perc", color=plot_color_pallete["cCRE"], linewidth=3, ax=ax)
     ax.set_ylabel("cCREs retained (%)")
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda val, _: f"{val * 100:.0f}%"))
     ax.set_xlabel("Minimum barcodes per cCRE")
@@ -136,7 +134,6 @@ def Retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set) -> 
 
 
 def cCREs_per_BC_plot(promiscuity_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    plt.clf()
     fig, ax_hist = plt.subplots()
     bin_width = 0.5
     min_val = promiscuity_counts_df["cCRE_count"].min()
@@ -163,7 +160,8 @@ def cCREs_per_BC_plot(promiscuity_counts_df: pd.DataFrame) -> tuple[Figure, Axes
 
 
 def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    gc_bins = pd.cut(final_counts_df["gc"], bins=list(np.arange(0, 1.01, 0.05)), duplicates="drop")
+    bins = [float(x) for x in np.arange(0, 1.01, 0.05)]
+    gc_bins = pd.cut(final_counts_df["gc"], bins=bins, duplicates="drop")
     final_counts_df["gc_bin"] = gc_bins
     bin_sizes = final_counts_df.reset_index().groupby("gc_bin")["index"].nunique()
     bin_df = pd.DataFrame(data={"gc_bin": bin_sizes.index, "bin_size": bin_sizes.values})
@@ -174,11 +172,15 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
     boxplot_df = final_counts_df.copy()
     boxplot_df["gc_bin_center"] = boxplot_df["gc_bin"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
-    boxplot_groups = boxplot_df.groupby("gc_bin_center")["association_count"].apply(list)
 
-    gc_summary = boxplot_df.groupby("gc_bin", observed=False)["association_count"].agg(["count", "median"]).reset_index()
+    boxplot_groups = boxplot_df.groupby("gc_bin_center", observed=True)["association_count"].apply(list)
 
-    gc_summary = gc_summary[gc_summary["count"] > 0]
+    gc_summary = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["association_count"]
+        .agg(count="size", median="median")
+        .reset_index()
+    )
+
     bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
@@ -194,13 +196,19 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     )
     ax_hist.set_xticks([bin_edges[0], bin_edges[-1]])
     ax_hist.set_xlabel("GC content")
-    ax_hist.set_ylabel("Number of reads")
+    ax_hist.set_ylabel("Number of reads per cCRE")
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
     ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
     ax2 = ax_hist.twinx()
-    ax2.plot(boxplot_groups.index, gc_summary["count"], color=plot_color_pallete["cCRE"], marker="o", label="cCRE count")
-    ax2.set_ylabel("Number of cCREs")
+    ax2.plot(
+        gc_summary["gc_bin_center"],
+        gc_summary["count"],
+        color=plot_color_pallete["cCRE"],
+        marker="o",
+        label="cCRE count",
+    )
+    ax2.set_ylabel("Number of unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -212,7 +220,6 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
 
 def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    plt.clf()
     fig, ax_hist = plt.subplots()
     xs = np.sort(final_counts_df["g_stretch"].unique())
     data = [np.asarray(final_counts_df.loc[final_counts_df["g_stretch"] == x, "association_count"]) for x in xs]
@@ -254,7 +261,7 @@ def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Ax
 def downsampling_Retained_cCREs_plot(oligo_coverage_df, output_path) -> tuple[Figure, Axes]:
     x_arr = oligo_coverage_df["ds"].to_numpy(dtype=float)
     y_arr = oligo_coverage_df["oligo_coverage"].to_numpy(dtype=float)
-    params_hill, _ = curve_fit(_hill_model, x_arr, y_arr, bounds=(0, np.inf))
+    params_hill, _ = curve_fit(_hill_model, x_arr, y_arr, bounds=(0, np.inf), maxfev=10000, p0=[1, 1, 1])
 
     x_fit = np.linspace(0.1, 3, 100)
     y_hill_fit = _hill_model(x_fit, *params_hill)
@@ -367,20 +374,45 @@ def retained_ccres_and_barcodes_plot(result_melted_df: pd.DataFrame) -> tuple[Fi
     return fig, ax
 
 
-def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, show_colorbar=True) -> tuple[Figure, Axes]:
+def ratio_correlation_between_replicates_plot(
+    activity_by_rep: pd.DataFrame, show_colorbar=True, compare_rep1: str | None = None, compare_rep2: str | None = None
+) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith("RNA_DNA_ratio_log_rep"):
+            try:
+                num = int(col.split("_rep")[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for ratio correlation plot")
+
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+
     # Prepare the data
     # Replace Inf values with NaN, then drop any rows with NaN values
     activity_by_rep = activity_by_rep.replace([np.inf, -np.inf], np.nan)
 
-    # Drop rows where either 'ratio_log_rep1' or 'ratio_log_rep2' has NaN or Inf
-    activity_by_rep = activity_by_rep.dropna(subset=["RNA_DNA_ratio_log_rep1", "RNA_DNA_ratio_log_rep2"])
+    # Drop rows where either ratio column has NaN or Inf
+    activity_by_rep = activity_by_rep.dropna(subset=[f"RNA_DNA_ratio_log_{compare_rep1}", f"RNA_DNA_ratio_log_{compare_rep2}"])
 
-    x = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep1"].values)
-    y = np.asarray(activity_by_rep["RNA_DNA_ratio_log_rep2"].values)
+    x = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep1}"].values)
+    y = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep2}"].values)
+
+    r = pearsonr(x, y)[0]
 
     fig, ax = plt.subplots()
 
-    hb = plt.hexbin(
+    hb = ax.hexbin(
         x,
         y,
         gridsize=200,
@@ -390,8 +422,10 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
         linewidths=0,
     )
 
-    ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
-    ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 2")
+    ax.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
+    ax.set_ylabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep2}")
+
+    plt.text(0.05, 0.95, s=rf"r= {r:.3f}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
 
     xticks = ax.get_xticks()
     yticks = ax.get_yticks()
@@ -405,20 +439,46 @@ def ratio_correlation_between_replicates_plot(activity_by_rep: pd.DataFrame, sho
     return fig, ax
 
 
-def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
+def ratio_correlation_with_controls_plot(
+    activity_by_rep: pd.DataFrame,
+    neg: Iterable[Any],
+    pos: Iterable[Any],
+    compare_rep1: str | None = None,
+    compare_rep2: str | None = None,
+) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith("RNA_DNA_ratio_log_rep"):
+            try:
+                num = int(col.split("_rep")[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for ratio correlation plot")
+
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
 
     activity_by_rep = activity_by_rep.replace([np.inf, -np.inf], np.nan)
 
-    # Drop rows where either 'RNA_DNA_ratio_log_rep1' or 'RNA_DNA_ratio_log_rep2' has NaN or Inf
-    activity_by_rep = activity_by_rep.dropna(subset=["RNA_DNA_ratio_log_rep1", "RNA_DNA_ratio_log_rep2"])
+    # Drop rows where either ratio column has NaN or Inf
+    activity_by_rep = activity_by_rep.dropna(subset=[f"RNA_DNA_ratio_log_{compare_rep1}", f"RNA_DNA_ratio_log_{compare_rep2}"])
 
-    x = activity_by_rep["RNA_DNA_ratio_log_rep1"].values
-    y = activity_by_rep["RNA_DNA_ratio_log_rep2"].values
+    x = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep1}"].values)
+    y = np.asarray(activity_by_rep[f"RNA_DNA_ratio_log_{compare_rep2}"].values)
 
     fig, ax = plt.subplots()
 
     # --- Background as uniform-gray hexgrid (no density coloring) ---
-    hb = plt.hexbin(
+    hb = ax.hexbin(
         x,
         y,
         gridsize=200,  # hex resolution
@@ -430,16 +490,17 @@ def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
     # --- FORCE all hexes to identical gray ---
     gray = to_rgba("lightgray", 1.0)  # (r,g,b,a)
     hb.set_array(None)  # detach scalar mapping (important)
-    hb.set_facecolors(np.tile(gray, (hb.get_offsets().shape[0], 1)))
+    offsets = np.asarray(hb.get_offsets())
+    hb.set_facecolor([gray] * offsets.shape[0])
 
-    ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
-    ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 2")
+    ax.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
+    ax.set_ylabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep2}")
 
     # --- Overlay controls (same as before) ---
     ax.scatter(
         data=activity_by_rep[activity_by_rep["cCRE"].isin(neg)],
-        x="RNA_DNA_ratio_log_rep1",
-        y="RNA_DNA_ratio_log_rep2",
+        x=f"RNA_DNA_ratio_log_{compare_rep1}",
+        y=f"RNA_DNA_ratio_log_{compare_rep2}",
         s=15,
         label="negative control",
         color=neg_active_ctrl_color,
@@ -449,8 +510,8 @@ def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
 
     ax.scatter(
         data=activity_by_rep[activity_by_rep["cCRE"].isin(pos)],
-        x="RNA_DNA_ratio_log_rep1",
-        y="RNA_DNA_ratio_log_rep2",
+        x=f"RNA_DNA_ratio_log_{compare_rep1}",
+        y=f"RNA_DNA_ratio_log_{compare_rep2}",
         s=15,
         label="positive control",
         color=pos_active_ctrl_color,
@@ -470,7 +531,8 @@ def ratio_correlation_with_controls_plot(activity_by_rep, neg, pos):
 
 def activity_distribution_plot(act_df: pd.DataFrame) -> tuple[Figure, Axes]:
     fig, ax = plt.subplots()
-    bin_edges = np.linspace(-4, 4, 201)  # 100 bins between -10 and 20
+
+    bin_edges = [float(x) for x in np.linspace(-4, 4, 201)]  # 100 bins between -10 and 20
     ax.hist(
         act_df["RNA_DNA_ratio_log_rep_comb"],
         bins=bin_edges,
@@ -579,13 +641,15 @@ def rna_dna_ratio_hexbin_plot(act_df, DNA_counts, RNA_counts) -> tuple[Figure, A
     ax.set_xlabel("DNA count")
     ax.set_ylabel("RNA count")
 
-    cbar = plt.colorbar(hb)
+    cbar = plt.colorbar(hb, ax=ax)
     cbar.set_label("log10(count) per hexbin")  # or 'log10(count)' if using LogNorm
 
     return fig, ax
 
 
-def control_boxplots_plot(act_df, neg, pos, test):
+def control_boxplots_plot(
+    act_df: pd.DataFrame, neg: Iterable[Any], pos: Iterable[Any], test: Iterable[Any]
+) -> tuple[Figure, Axes]:
 
     annot_df = act_df.copy()
     annot_df["control_annotation"] = None
@@ -602,7 +666,7 @@ def control_boxplots_plot(act_df, neg, pos, test):
     sns.boxplot(
         data=annot_df,
         y="control_annotation",
-        x="activity_statistic",
+        x="RNA_DNA_ratio_log_rep_comb",
         hue="control_annotation",
         palette={"PosCtrl": pos_color, "NegCtrl": neg_color, "Test": test_color},
         showfliers=False,
@@ -622,7 +686,7 @@ def scale(n, n_max):
     return 30 + 200 * np.sqrt(n / n_max)
 
 
-def merge_edge_bins(x, edges, min_count):
+def merge_edge_bins(x: np.ndarray, edges: np.ndarray, min_count: int) -> Sequence[float]:
     """
     Merge only edge bins (leftmost and rightmost) into their neighbors
     until each edge bin has at least `min_count` points.
@@ -636,7 +700,7 @@ def merge_edge_bins(x, edges, min_count):
 
     # Need at least 2 bins to do anything
     if edges.size <= 2:
-        return edges
+        return [float(e) for e in edges]
 
     while True:
         counts, _ = np.histogram(x, bins=edges)
@@ -661,15 +725,38 @@ def merge_edge_bins(x, edges, min_count):
         if not changed or edges.size <= 2:
             break
 
-    return edges
+    return [float(e) for e in edges]
 
 
-def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.DataFrame) -> tuple[Figure, Axes]:
+def replicability_by_activity_plot(
+    activity_by_rep: pd.DataFrame, act_df: pd.DataFrame, compare_rep1: str | None = None, compare_rep2: str | None = None
+) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in activity_by_rep.columns:
+        if col.startswith("RNA_DNA_ratio_log_rep"):
+            try:
+                num = int(col.split("_rep")[1])
+                rep_nums.add(num)
+            except (ValueError, IndexError):
+                pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for replicability plot")
+
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+
     merged_df = activity_by_rep.merge(act_df, left_on="cCRE", right_on="cCRE", how="inner")
     merged_df["activity_status"].value_counts()
 
-    x = merged_df["RNA_DNA_ratio_log_rep1"]
-    y = merged_df["RNA_DNA_ratio_log_rep2"]
+    x = merged_df[f"RNA_DNA_ratio_log_{compare_rep1}"]
+    y = merged_df[f"RNA_DNA_ratio_log_{compare_rep2}"]
     g = merged_df["activity_status"]
     df = pd.DataFrame({"x": x, "y": y, "activity": g}).dropna()
 
@@ -680,19 +767,19 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
     min_active = df.loc[df["mask"], "x"].min()
     max_active = df.loc[df["mask"], "x"].max()
     bins_non_active = np.linspace(
-        np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active))
+        np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active) + 1)
     )
-    bins_active = np.linspace(np.floor(min_active), np.ceil(max_active), int((np.ceil(max_active)) - np.floor(min_active)))
+    bins_active = np.linspace(np.floor(min_active), np.ceil(max_active), int((np.ceil(max_active)) - np.floor(min_active) + 1))
 
     n_min = 30  # or whatever you decide
 
     # non-active
-    x_non = df.loc[~df["mask"], "x"].values
+    x_non = np.asarray(df.loc[~df["mask"], "x"].values)
     bins_non_active_merged = merge_edge_bins(x_non, bins_non_active, n_min)
     df.loc[~df["mask"], "bin"] = pd.cut(df.loc[~df["mask"], "x"], bins=bins_non_active_merged, include_lowest=True)
 
     # active
-    x_act = df.loc[df["mask"], "x"].values
+    x_act = np.asarray(df.loc[df["mask"], "x"].values)
     bins_active_merged = merge_edge_bins(x_act, bins_active, n_min)
     df.loc[df["mask"], "bin"] = pd.cut(df.loc[df["mask"], "x"], bins=bins_active_merged, include_lowest=True)
 
@@ -703,7 +790,7 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
         mean_y = np.mean(group["y"])
         std_y = np.std(group["y"], ddof=1)
         cv_y = (std_y / abs(mean_y)) * 100 if mean_y != 0 else np.nan
-        mid = group["x"].median()
+        mid = b.mid if pd.notna(b) else np.nan
         active_flag = group["mask"].iloc[0]
         results.append({"bin": str(b), "mid_x": mid, "corr": r, "cv": cv_y, "n": len(group), "activity_flag": active_flag})
 
@@ -744,7 +831,7 @@ def replicability_by_activity_plot(activity_by_rep: pd.DataFrame, act_df: pd.Dat
         zorder=3,
     )
 
-    ax1.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ replicate 1")
+    ax1.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
 
     ax1.set_ylabel(f"Pearson's correlation (r)")
     ax1.axhline(0, color="gray", linestyle="--", lw=1)
@@ -787,16 +874,17 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
     bin_intervals = bin_df["GC_Content_label"].cat.categories
     bin_edges = [i.left for i in bin_intervals] + [bin_intervals[-1].right]
-    bin_widths = [(i.right - i.left) / 2 for i in bin_intervals]
-    # Get bar heights in the same order
+
     boxplot_df = final_counts_df.copy()
     boxplot_df = boxplot_df.dropna(subset=["GC_Content_label", "DNA_rep_comb"])
     boxplot_df["gc_bin_center"] = boxplot_df["GC_Content_label"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
-    boxplot_groups = boxplot_df.groupby("gc_bin_center")["DNA_rep_comb"].apply(list)
-    gc_summary = boxplot_df.groupby("GC_Content_label", observed=False)["DNA_rep_comb"].agg(["count", "median"]).reset_index()
-    # Filter gc_summary to match only bins with data
-    gc_summary = gc_summary[gc_summary["count"] > 0]
-    # Filter widths to match only bins with data
+
+    boxplot_groups = boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"].apply(list)
+
+    gc_summary = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"].agg(count="size", median="median").reset_index()
+    )
+
     bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
@@ -810,9 +898,18 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         boxprops=dict(facecolor=plot_color_pallete["read"]),
         medianprops=dict(color="black", linewidth=1),
     )
+
     ax_hist.set_ylabel("Number of reads")
+
     ax2 = ax_hist.twinx()
-    ax2.plot(boxplot_groups.index, gc_summary["count"], color=plot_color_pallete["cCRE"], marker="o", label="cCRE count")
+    ax2.plot(
+        gc_summary["gc_bin_center"],
+        gc_summary["count"],
+        color=plot_color_pallete["cCRE"],
+        marker="o",
+        label="cCRE count",
+    )
+
     ax2.set_ylabel("Number of cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
@@ -826,6 +923,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     ax_hist.set_xticks([0, 100])
     ax_hist.set_xticklabels(["0", "100"])
     f.set_size_inches(8, 8)
+
     return f, ax_hist
 
 
@@ -854,7 +952,7 @@ def activity_statistic_vs_count_ratio_plot(act_df: pd.DataFrame, min_DNA_reads: 
 
     ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$")
     ax.set_ylabel(r"Activity score")
-    ax.text(0.95, 0.05, s=rf"r= {round(r,3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
+    ax.text(0.95, 0.05, s=rf"r= {r:.3f}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
     # ax.set_xlim(-4, 6)
     # ax.set_ylim(-4, 6)
     ax.set_xticks([np.round(x.min()), np.round(x.max())])
@@ -897,8 +995,8 @@ def bc_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_bc: pd.DataFr
     x_arr_RNA = reps_sampling_df_bc[reps_sampling_df_bc["measurement"] == "RNA"]["Sampling_parameter"].to_numpy(dtype=float)
     y_arr_RNA = reps_sampling_df_bc[reps_sampling_df_bc["measurement"] == "RNA"]["fraction"].to_numpy(dtype=float)
 
-    params_hill_DNA, _ = curve_fit(_hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf))
-    params_hill_RNA, _ = curve_fit(_hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf))
+    params_hill_DNA, _ = curve_fit(_hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf), maxfev=10000, p0=[1, 1, 1])
+    params_hill_RNA, _ = curve_fit(_hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf), maxfev=10000, p0=[1, 1, 1])
 
     # create datapoints for plotting
     x_fit = np.linspace(0.1, 3, 100)
@@ -928,6 +1026,7 @@ def bc_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_bc: pd.DataFr
         alpha=0.9,
         palette=c_palette,
         dashes=False,
+        ax=ax,
     )
 
     ax.scatter(x_pred, y_pred_DNA, color="lightgray", marker="s", s=30, alpha=0.5)
@@ -990,9 +1089,8 @@ def ccre_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_ccre: pd.Da
     )
     y_arr_RNA = reps_sampling_df_ccre[reps_sampling_df_ccre["measurement"] == "RNA"]["fraction"].to_numpy(dtype=float)
 
-    params_hill_DNA, _ = curve_fit(_hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf))
-    params_hill_RNA, _ = curve_fit(_hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf))
-
+    params_hill_DNA, _ = curve_fit(_hill_model, x_arr_DNA, y_arr_DNA, bounds=(0, np.inf), maxfev=10000, p0=[1, 1, 1])
+    params_hill_RNA, _ = curve_fit(_hill_model, x_arr_RNA, y_arr_RNA, bounds=(0, np.inf), maxfev=10000, p0=[1, 1, 1])
     # create datapoints for plotting
     x_fit = np.linspace(0.1, 3, 100)
     y_hill_fit_DNA = _hill_model(x_fit, *params_hill_DNA)
@@ -1021,6 +1119,7 @@ def ccre_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_ccre: pd.Da
         alpha=0.9,
         palette=c_palette,
         dashes=False,
+        ax=ax,
     )
 
     ax.scatter(x_pred, y_pred_DNA, color="lightgray", marker="s", s=30, alpha=0.5)
@@ -1069,11 +1168,35 @@ def ccre_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_ccre: pd.Da
     return fig, ax
 
 
-def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
+def minimizing_noise_hexbin_plot(
+    noise_df: pd.DataFrame, compare_rep1: str | None = None, compare_rep2: str | None = None
+) -> tuple[Figure, Axes]:
     # Define parameters
     outlier_filters = ["no_filter", "filtered_std3", "filtered_std2"]
     dna_thresholds = [0, 10, 25]
-    reps = ["rep1", "rep2", "rep3"]
+
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in noise_df.columns:
+        if "ratio_log_" in col and "_rep" in col:
+            parts = col.split("_rep")
+            if len(parts) > 1:
+                try:
+                    num = int(parts[1])
+                    rep_nums.add(num)
+                except ValueError:
+                    pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for hexbin plot")
+
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
 
     # Plot settings
     gridsize = 100
@@ -1108,11 +1231,14 @@ def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
             # Drop NaNs
             df_plot = noise_df.dropna(
-                subset=[f"ratio_{outlier_filter}_rep1_DNA_{threshold}", f"ratio_{outlier_filter}_rep2_DNA_{threshold}"]
+                subset=[
+                    f"ratio_{outlier_filter}_{compare_rep1}_DNA_{threshold}",
+                    f"ratio_{outlier_filter}_{compare_rep2}_DNA_{threshold}",
+                ]
             )
 
-            x = df_plot[f"ratio_{outlier_filter}_rep1_DNA_{threshold}"].to_numpy(dtype=float)
-            y = df_plot[f"ratio_{outlier_filter}_rep2_DNA_{threshold}"].to_numpy(dtype=float)
+            x = df_plot[f"ratio_{outlier_filter}_{compare_rep1}_DNA_{threshold}"].to_numpy(dtype=float)
+            y = df_plot[f"ratio_{outlier_filter}_{compare_rep2}_DNA_{threshold}"].to_numpy(dtype=float)
 
             hb = None
             if x.size > 0 and y.size > 0:
@@ -1127,6 +1253,10 @@ def minimizing_noise_hexbin_plot(noise_df: pd.DataFrame) -> tuple[Figure, Axes]:
                     edgecolors="none",
                     # NOTE: we’ll apply a shared LogNorm AFTER we know global max
                 )
+
+                r = pearsonr(x, y)[0]
+
+                ax.text(0.03, 0.97, f"r = {r:.3f}", transform=ax.transAxes, ha="left", va="top")
 
                 # Track global max count across panels for shared color scaling
                 panel_max = float(np.nanmax(hb.get_array())) if hb.get_array().size else 0.0
@@ -1180,7 +1310,10 @@ def cCRE_annotation_by_activity_plot(annotated_screen_df) -> tuple[Figure, Axes]
     counts_df = counts_df.reset_index()
     counts_df_wide = counts_df.pivot(index="bin", columns=["class"], values="count")
     counts_df_wide = counts_df_wide.reset_index()
-    counts_df_wide_prop = counts_df_wide.iloc[:, 1:].apply(lambda x: x / x.sum(), axis=1)
+    cols = counts_df_wide.columns[1:]
+    counts_df_wide_prop = counts_df_wide.copy()
+    counts_df_wide_prop[cols] = counts_df_wide[cols].div(counts_df_wide[cols].sum(axis=0), axis=1)
+    # counts_df_wide_prop = counts_df_wide.iloc[:, 1:].apply(lambda x: x / x.sum(), axis=1)
     counts_df_wide_prop["bin"] = counts_df_wide["bin"]
     bin_order = ["Inactive", "Q1", "Q2", "Q3", "Q4", "Q5"]
     counts_df_wide_prop["bin"] = pd.Categorical(counts_df_wide_prop["bin"], categories=bin_order, ordered=True)
@@ -1254,7 +1387,7 @@ def ai_predictions_vs_activity_hexbin_plot(AI_pred_df: pd.DataFrame, colorbar: b
     ax_scat.set_xlabel("AI-predicted activity")
     ax_scat.set_ylabel("Experimentally measured activity")
     ax_scat.text(
-        0.05, 0.95, s=rf"r= {round(r,3)}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
+        0.05, 0.95, s=rf"r= {r:.3f}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
     )
     if colorbar:
         cbar = plt.colorbar(hb, ax=ax_scat)
@@ -1266,7 +1399,6 @@ def ai_predictions_vs_activity_hexbin_plot(AI_pred_df: pd.DataFrame, colorbar: b
 def ai_predictions_vs_differential_activity_hexbin_plot(
     AI_comparative_pred_df: pd.DataFrame, colorbar: bool
 ) -> tuple[Figure, Axes]:
-    plt.clf()
     y = np.asarray(AI_comparative_pred_df["LFC - exp"].values)
     x = np.asarray(AI_comparative_pred_df["LFC - AI"].values)
     # Create the KDE (Kernel Density Estimate)
@@ -1284,7 +1416,7 @@ def ai_predictions_vs_differential_activity_hexbin_plot(
     ax_scat.set_xlabel("AI-predicted differential activity")
     ax_scat.set_ylabel("Experimentally measured differential activity")
     ax_scat.text(
-        0.05, 0.95, s=rf"r= {round(r, 3)}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
+        0.05, 0.95, s=rf"r= {r:.3f}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
     )
     if colorbar:
         cbar = plt.colorbar(hb, ax=ax_scat)
@@ -1295,22 +1427,26 @@ def ai_predictions_vs_differential_activity_hexbin_plot(
 
 def differential_activity_distribution_plot(comparative_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
-    def round_down(num, dec=0):
+    def round_down(num: float, dec: int = 0) -> float:
         mult = 10**dec
         return math.floor(num * mult) / mult
 
-    def round_up(num, dec=0):
+    def round_up(num: float, dec: int = 0) -> float:
         mult = 10**dec
         return math.ceil(num * mult) / mult
 
-    max_lim = round_up(comparative_df["logFC"].max(), 2)
-    min_lim = round_down(comparative_df["logFC"].min(), 2)
-    bins = np.arange(min_lim, max_lim, 0.05)
+    max_lim = round_up(float(comparative_df["logFC"].max()), 2)
+    min_lim = round_down(float(comparative_df["logFC"].min()), 2)
+    bin_width = 0.05
+    bins = np.arange(min_lim, max_lim + bin_width, bin_width).tolist()
 
     fig, ax = plt.subplots()
-    comparative_df["logFC"].hist(color="gray", bins=bins, label="Active", grid=False, ax=ax)
-    comparative_df.loc[comparative_df["differentialy_active"] == True, "logFC"].hist(
-        color="red", bins=bins, label="Differentially active", grid=False, ax=ax
+    ax.hist(comparative_df["logFC"].to_numpy(dtype=float), color="gray", bins=bins, label="Active")
+    ax.hist(
+        comparative_df.loc[comparative_df["differentialy_active"] == True, "logFC"].to_numpy(dtype=float),
+        color="red",
+        bins=bins,
+        label="Differentially active",
     )
     ax.set_xlabel("Fold Change, log2")
     ax.set_ylabel("#cCREs")
@@ -1378,7 +1514,7 @@ def allelic_pairs_hexbin_plot(pair_df: pd.DataFrame, colorbar: bool) -> tuple[Fi
     ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ allele 2")
 
     r = pearsonr(x, y)[0]
-    ax.text(0.05, 0.95, s=rf"r= {round(r, 3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
+    ax.text(0.05, 0.95, s=rf"r= {r:.3f}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
 
     ax.set_xticks([np.round(x.min()), np.round(x.max())])
     ax.set_yticks([np.round(y.min()), np.round(y.max())])
@@ -1411,7 +1547,7 @@ def cell_types_hexbin_plot(cell_type_df: pd.DataFrame, colorbar: bool) -> tuple[
     ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ Cell type 1")
     ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ Cell type 2")
     r, p = pearsonr(x, y)
-    ax.text(0.90, 0.05, s=rf"r= {round(r, 3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
+    ax.text(0.90, 0.05, s=rf"r= {r:.3f}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
     ax.set_xticks([np.round(x.min()), np.round(x.max())])
     ax.set_yticks([np.round(y.min()), np.round(y.max())])
 
@@ -1422,9 +1558,34 @@ def cell_types_hexbin_plot(cell_type_df: pd.DataFrame, colorbar: bool) -> tuple[
     return fig, ax
 
 
-def diff_activity_corr_reps_hexbin_plot(pair_rep_df: pd.DataFrame, colorbar: bool) -> tuple[Figure, Axes]:
-    x = np.asarray(pair_rep_df["LFC_rep1"].values)
-    y = np.asarray(pair_rep_df["LFC_rep2"].values)
+def diff_activity_corr_reps_hexbin_plot(
+    pair_rep_df: pd.DataFrame, colorbar: bool, compare_rep1: str | None = None, compare_rep2: str | None = None
+) -> tuple[Figure, Axes]:
+    # Dynamically detect replicates
+    rep_nums = set()
+    for col in pair_rep_df.columns:
+        if col.startswith("LFC_rep"):
+            parts = col.split("_rep")
+            if len(parts) > 1:
+                try:
+                    num = int(parts[1])
+                    rep_nums.add(num)
+                except ValueError:
+                    pass
+    reps = [f"rep{i}" for i in sorted(rep_nums)]
+    if len(reps) < 2:
+        raise ValueError("Need at least 2 replicates for hexbin plot")
+
+    # Determine which replicates to compare
+    if compare_rep1 is None:
+        compare_rep1 = reps[0]
+    if compare_rep2 is None:
+        compare_rep2 = reps[1]
+    if compare_rep1 not in reps or compare_rep2 not in reps:
+        raise ValueError(f"Specified replicates {compare_rep1} and {compare_rep2} not found in data. Available: {reps}")
+
+    x = np.asarray(pair_rep_df[f"LFC_{compare_rep1}"].values)
+    y = np.asarray(pair_rep_df[f"LFC_{compare_rep2}"].values)
     fig, ax = plt.subplots()
 
     hb = ax.hexbin(
@@ -1440,7 +1601,7 @@ def diff_activity_corr_reps_hexbin_plot(pair_rep_df: pd.DataFrame, colorbar: boo
     ax.set_xlabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ allelic difference")
     ax.set_ylabel(r"$\log_{2}\!\left(\frac{\mathrm{RNA}}{\mathrm{DNA}}\right)$ allelic difference")
     r = pearsonr(x, y)[0]
-    ax.text(0.05, 0.95, s=rf"r= {round(r, 3)}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
+    ax.text(0.05, 0.95, s=rf"r= {r:.3f}", transform=ax.transAxes, verticalalignment="top", horizontalalignment="left")
 
     ax.set_xticks([np.floor(x.min()), np.ceil(x.max())])
     ax.set_yticks([np.floor(y.min()), np.ceil(y.max())])

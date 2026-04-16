@@ -1,0 +1,3 @@
+**Legend:** Each figure includes two panels with a shared x-axis showing binned GC content. The box plots showcase the number of DNA reads per cCRE. The histogram showcases the number of cCREs in each GC content bin. Data was binned in fixed sizes of 5%.
+
+**Interpretation:** In the successful example, read counts are relatively consistent across GC content, indicating PCR conditions well matched to the GC composition of most cCREs, as reflected by closely aligned peaks. The unsuccessful example showcases pronounced amplification bias and PCR conditions that are poorly optimized for the GC content of the majority of cCREs.

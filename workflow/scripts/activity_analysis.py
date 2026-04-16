@@ -1,5 +1,6 @@
 import ast  # for safe eveal, for parsing some of the data
 import os
+from typing import Any, Iterable
 
 import click
 import const  # to reload use import(importlib) and then importlib.reload(const)
@@ -118,9 +119,36 @@ def r_squared(y_true, y_pred):
 
 def vectorize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df = df[["RNA_rep1", "DNA_rep1", "RNA_rep2", "DNA_rep2", "RNA_rep3", "DNA_rep3"]]
 
-    def safe_eval(x):
+    # Dynamically detect RNA and DNA columns
+    rep_nums = set()
+    for col in df.columns:
+        if col.startswith("RNA_rep") or col.startswith("DNA_rep"):
+            if "_rep" in col:
+                try:
+                    num = int(col.split("_rep")[1])
+                    rep_nums.add(num)
+                except (ValueError, IndexError):
+                    pass
+
+    if not rep_nums:
+        raise ValueError("No RNA_rep or DNA_rep columns found in dataframe")
+
+    # Only keep replicates that have BOTH RNA and DNA columns
+    reps = sorted([rep for rep in rep_nums if f"RNA_rep{rep}" in df.columns and f"DNA_rep{rep}" in df.columns])
+
+    if not reps:
+        raise ValueError("No replicates with both RNA and DNA columns found")
+
+    # Sort columns: RNA first, then DNA, organized by replicate number
+    cols_to_keep = []
+    for rep in reps:
+        cols_to_keep.append(f"RNA_rep{rep}")
+        cols_to_keep.append(f"DNA_rep{rep}")
+
+    df = df[cols_to_keep]
+
+    def safe_eval(x: Any) -> Any:
         if pd.isna(x):  # catches np.nan, pd.NA, None
             return np.nan
         try:
@@ -128,8 +156,7 @@ def vectorize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
         except (ValueError, SyntaxError):
             return x  # fallback: return as-is if it cannot be parsed
 
-    df_vectorized = df.applymap(safe_eval)
-    return df_vectorized
+    return df.apply(lambda col: col.map(safe_eval))
 
 
 def melt_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -139,10 +166,11 @@ def melt_df(df: pd.DataFrame) -> pd.DataFrame:
         series = df[col]
 
         # drop NAs and ensure all entries are lists
-        series = series.dropna().apply(lambda x: np.asarray(x, dtype=float))
+        series = series.dropna()
+        series = pd.Series([np.asarray(x, dtype=float) for x in series], index=series.index)
 
         # 1. Fraction of rows with at least one non-zero
-        frac_rows_nonzero = (series.apply(lambda arr: np.any(arr != 0))).mean()
+        frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in series])
 
         # 2. Flatten everything into one list and compute fraction non-zero
         if len(series) > 0:
@@ -174,31 +202,29 @@ def melt_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def plot_retained_cCREs_and_barcodes(result_melted_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
     fig, _ = plot_lib.retained_ccres_and_barcodes_plot(result_melted_df)
     const.save_fig(fig, "Retained_cCREs_and_BCs", output_path)
-    print("Retained_cCREs_and_BCs DONE")
+    click.echo("Retained_cCREs_and_BCs DONE")
 
 
 def plot_activity_distribution(act_df: pd.DataFrame, output_path: str) -> None:
     fig, _ = plot_lib.activity_distribution_plot(act_df)
     const.save_fig(fig, "Activity_distribution", output_path)
-    print("Activity_distribution DONE")
+    click.echo("Activity_distribution DONE")
 
 
 def plot_p_value_distribution(act_df: pd.DataFrame, output_path: str) -> None:
     fig, _ = plot_lib.p_value_distribution_plot(act_df)
     const.save_fig(fig, "P_value_distribution", output_path)
-    print("P_value_distribution DONE")
+    click.echo("P_value_distribution DONE")
 
 
 def plot_activity_downsampling(ds_path: str, output_path: str) -> None:
-    plt.clf()
     act_perc_list = []
     downsampling_perc_list = np.arange(0.1, 1.01, 0.1)
     for p in downsampling_perc_list:
         perc = round(p, 1)
-        print(perc)
+        click.echo(perc)
         csv_gz_path = rf"{ds_path}/activity_df_{perc}.csv.gz"
         csv_path = rf"{ds_path}/activity_df_{perc}.csv"
 
@@ -206,8 +232,8 @@ def plot_activity_downsampling(ds_path: str, output_path: str) -> None:
             csv_path = csv_gz_path
 
         elif not os.path.exists(csv_path):
-            print(f"Error: Neither {csv_gz_path} nor {csv_path} found.")
-            print(f"Skipping ploting the activity downsampling")
+            click.echo(f"Error: Neither {csv_gz_path} nor {csv_path} found.", err=True)
+            click.echo(f"Skipping ploting the activity downsampling", err=True)
             return
 
         df = pd.read_csv(csv_path)
@@ -219,11 +245,10 @@ def plot_activity_downsampling(ds_path: str, output_path: str) -> None:
 
     fig, _ = plot_lib.activity_downsampling_plot(summary_df)
     const.save_fig(fig, "Activity_by_sequencing_depth", output_path)
-    print("Activity_by_sequencing_depth DONE")
+    click.echo("Activity_by_sequencing_depth DONE")
 
 
 def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, output_path):
-    plt.clf()
     rep_corr_by_act = []
     rep_corr_list = []
     downsampling_perc_list = np.arange(0.1, 1.01, 0.1)
@@ -237,8 +262,8 @@ def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, ou
         if os.path.exists(rep_gz_path):
             rep_path = rep_gz_path
         elif not os.path.exists(rep_path):
-            print(f"Error: Neither {rep_gz_path} nor {rep_path} found.")
-            print(f"Skipping ploting reproducibility by sequencing depth")
+            click.echo(f"Error: Neither {rep_gz_path} nor {rep_path} found.", err=True)
+            click.echo(f"Skipping ploting reproducibility by sequencing depth", err=True)
             return
         activity_by_rep_df_ds = pd.read_csv(rep_path)
 
@@ -248,8 +273,8 @@ def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, ou
         if os.path.exists(act_gz_path):
             act_path = act_gz_path
         elif not os.path.exists(act_path):
-            print(f"Error: Neither {act_gz_path} nor {act_path} found.")
-            print(f"Skipping ploting reproducibility by sequencing depth")
+            click.echo(f"Error: Neither {act_gz_path} nor {act_path} found.", err=True)
+            click.echo(f"Skipping ploting reproducibility by sequencing depth", err=True)
             return
 
         activity_df_ds = pd.read_csv(act_path)
@@ -271,14 +296,14 @@ def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, ou
 
     fig, _ = plot_lib.reproducibility_by_sequencing_depth_plot(summary_df)
     const.save_fig(fig, "Reproducibility_by_sequencing_depth", output_path)
-    print("Reproducibility_by_sequencing_depth DONE")
+    click.echo("Reproducibility_by_sequencing_depth DONE")
 
 
 def plot_cumulative_RNA_reads(act_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.cumulative_rna_reads_plot(act_df)
     const.save_fig(fig, "Cumulative_RNA_reads", output_path)
-    print("Cumulative_RNA_reads DONE")
+    click.echo("Cumulative_RNA_reads DONE")
 
 
 def create_gc_df(act_df: pd.DataFrame, f_file: str) -> pd.DataFrame:
@@ -316,118 +341,121 @@ def create_gc_df(act_df: pd.DataFrame, f_file: str) -> pd.DataFrame:
 
 
 def plot_gc_content_bias(final_counts_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.gc_content_bias_plot(final_counts_df)
     const.save_fig(fig, "DNA_counts_vs_GC_content", output_path)
-    print("DNA_counts_vs_GC_content DONE")
+    click.echo("DNA_counts_vs_GC_content DONE")
 
 
 def plot_ratio_correlation_between_replicates(activity_by_rep: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.ratio_correlation_between_replicates_plot(activity_by_rep, False)
     const.save_fig(fig, "Correlation_between_replicates", output_path)
 
     plt.clf()
     fig, _ = plot_lib.ratio_correlation_between_replicates_plot(activity_by_rep, True)
     const.save_fig(fig, "Correlation_between_replicates_w_bar", output_path)
-    print("Correlation_between_replicates DONE")
+    click.echo("Correlation_between_replicates DONE")
 
 
 def plot_Replicability_by_activity(activity_by_rep: pd.DataFrame, act_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.replicability_by_activity_plot(activity_by_rep, act_df)
     const.save_fig(fig, "Replicability_by_activity", output_path)
-    print("Replicability_by_activity DONE")
+    click.echo("Replicability_by_activity DONE")
 
 
 def plot_ratio_correlation_with_controls(
-    activity_by_rep: pd.DataFrame, neg: pd.DataFrame, pos: pd.DataFrame, output_path: str
+    activity_by_rep: pd.DataFrame, neg: Iterable[Any], pos: Iterable[Any], output_path: str
 ) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.ratio_correlation_with_controls_plot(activity_by_rep, neg, pos)
     const.save_fig(fig, "Correlation_between_replicates_controls", output_path)
-    print("Correlation between replicates (controls) DONE")
+    click.echo("Correlation between replicates (controls) DONE")
 
 
 def plot_minimizing_noise_hexbin(noise_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.minimizing_noise_hexbin_plot(noise_df)
     const.save_fig(fig, "Minimizing_noise", output_path)
-    print("Minimizing_noise DONE")
+    click.echo("Minimizing_noise DONE")
 
 
 def plot_RNA_DNA_ratio_hexbin(act_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.rna_dna_ratio_hexbin_plot(act_df, DNA_counts, RNA_counts)
     const.save_fig(fig, "RNA_vs_DNA_w_bar", output_path)
-    print("RNA_vs_DNA DONE")
+    click.echo("RNA_vs_DNA DONE")
 
 
-def plot_control_boxplots(act_df: pd.DataFrame, neg: pd.DataFrame, pos: pd.DataFrame, test: str, output_path: str) -> None:
-    plt.clf()
+def plot_control_boxplots(
+    act_df: pd.DataFrame, neg: Iterable[Any], pos: Iterable[Any], test: Iterable[Any], output_path: str
+) -> None:
+
     fig, _ = plot_lib.control_boxplots_plot(act_df, neg, pos, test)
     const.save_fig(fig, "Activity_of_controls", output_path)
-    print("Activity_of_controls DONE")
+    click.echo("Activity_of_controls DONE")
 
 
 def plot_cCRE_annotation_by_activity(annotated_screen_df: pd.DataFrame, output_path: str) -> None:
 
     fig, _ = plot_lib.cCRE_annotation_by_activity_plot(annotated_screen_df)
     const.save_fig(fig, "Genomic_annotations", output_path)
-    print("Genomic_annotations DONE")
+    click.echo("Genomic_annotations DONE")
 
 
 def plot_distance_to_TSS_by_activity(dist_df: pd.DataFrame, output_path: str) -> None:
 
-    plt.clf()
     fig, _ = plot_lib.distance_to_tss_by_activity_plot(dist_df)
     const.save_fig(fig, "Proximity_to_TSS", output_path)
-    print("Proximity_to_TSS DONE")
+    click.echo("Proximity_to_TSS DONE")
 
 
 def plot_AI_predictions_vs_activity_hexbin(ai_pred_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
 
     fig, _ = plot_lib.ai_predictions_vs_activity_hexbin_plot(ai_pred_df, colorbar=False)
     const.save_fig(fig, "AI_predictions_vs_activity", output_path)
-    print("AI_predictions_vs_activity DONE")
+
     plt.clf()
     fig, _ = plot_lib.ai_predictions_vs_activity_hexbin_plot(ai_pred_df, colorbar=True)
     const.save_fig(fig, "AI_predictions_vs_activity_w_bar", output_path)
+    click.echo("AI_predictions_vs_activity DONE")
 
 
 def plot_AI_predictions_vs_differential_activity_hexbin(ai_comparative_pred_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.ai_predictions_vs_differential_activity_hexbin_plot(ai_comparative_pred_df, colorbar=False)
     const.save_fig(fig, "AI_predictions_vs_differential_activity", output_path)
+
     plt.clf()
     fig, _ = plot_lib.ai_predictions_vs_differential_activity_hexbin_plot(ai_comparative_pred_df, colorbar=True)
     const.save_fig(fig, "AI_predictions_vs_differential_activity_w_bar", output_path)
-    print("AI_predictions_vs_differential_activity DONE")
+    click.echo("AI_predictions_vs_differential_activity DONE")
 
 
 def plot_differential_activity_distribution(comparative_df, output_path):
-    plt.clf()
+
     fig, _ = plot_lib.differential_activity_distribution_plot(comparative_df)
     const.save_fig(fig, "Differential_activity_distribution", output_path)
-    print("Differential_activity_distribution DONE")
+    click.echo("Differential_activity_distribution DONE")
 
 
 def plot_differential_activity_volcano(comparative_df, output_path):
-    plt.clf()
+
     fig, _ = plot_lib.differential_activity_volcano_plot(comparative_df, zoom=False)
     const.save_fig(fig, "Volcano_plot_FC_vs_Pval", output_path)
+
     plt.clf()
     fig, _ = plot_lib.differential_activity_volcano_plot(comparative_df, zoom=True)
     const.save_fig(fig, "Volcano_plot_FC_vs_Pval_zoom", output_path)
-    print("Volcano_plot_FC_vs_Pval DONE")
+    click.echo("Volcano_plot_FC_vs_Pval DONE")
 
 
 def plot_activity_statistic_vs_count_ratio(act_df, output_path):
-    plt.clf()
+
     fig, _ = plot_lib.activity_statistic_vs_count_ratio_plot(act_df, min_DNA_reads)
     const.save_fig(fig, "Activity_statistic_vs_count_ratio", output_path)
-    print("Activity_statistic_vs_count_ratio DONE")
+    click.echo("Activity_statistic_vs_count_ratio DONE")
 
 
 def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -449,9 +477,39 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
 
         activity_by_rep_df_ds = pd.read_csv(rep_path)
 
-        activity_by_rep_df_vectorized = activity_by_rep_df_ds[
-            ["RNA_rep1", "DNA_rep1", "RNA_rep2", "DNA_rep2", "RNA_rep3", "DNA_rep3"]
-        ]
+        # Dynamically detect RNA and DNA columns
+        rep_nums = set()
+        for col in activity_by_rep_df_ds.columns:
+            if col.startswith("RNA_rep") or col.startswith("DNA_rep"):
+                if "_rep" in col:
+                    try:
+                        num = int(col.split("_rep")[1])
+                        rep_nums.add(num)
+                    except (ValueError, IndexError):
+                        pass
+
+        if not rep_nums:
+            raise ValueError(f"No RNA_rep or DNA_rep columns found in {rep_path}")
+
+        # Only keep replicates that have BOTH RNA and DNA columns
+        reps = sorted(
+            [
+                rep
+                for rep in rep_nums
+                if f"RNA_rep{rep}" in activity_by_rep_df_ds.columns and f"DNA_rep{rep}" in activity_by_rep_df_ds.columns
+            ]
+        )
+
+        if not reps:
+            raise ValueError(f"No replicates with both RNA and DNA columns found in {rep_path}")
+
+        # Sort columns: RNA first, then DNA, organized by replicate number
+        cols_to_keep = []
+        for rep in reps:
+            cols_to_keep.append(f"RNA_rep{rep}")
+            cols_to_keep.append(f"DNA_rep{rep}")
+
+        activity_by_rep_df_vectorized = activity_by_rep_df_ds[cols_to_keep]
 
         def safe_eval(x):
             if pd.isna(x):  # catches np.nan, pd.NA, None
@@ -470,10 +528,10 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
             series = activity_by_rep_df_vectorized[col]
 
             # drop NAs and ensure all entries are lists
-            series = series.dropna().apply(lambda x: np.asarray(x, dtype=float))
-
+            series = series.dropna()
+            series = pd.Series([np.asarray(x, dtype=float) for x in series], index=series.index)
             # 1. Fraction of rows with at least one non-zero
-            frac_rows_nonzero = (series.apply(lambda arr: np.any(arr != 0))).mean()
+            frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in series])
 
             # 2. Flatten everything into one list and compute fraction non-zero
             if len(series) > 0:
@@ -508,62 +566,57 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
 
 
 def plot_BC_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_bc: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.bc_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_bc)
     const.save_fig(fig, "BC_retention_by_DNA_RNA_sequencing_depth", output_path)
-    print("BC_retention_by_DNA_RNA_sequencing_depth DONE")
+    click.echo("BC_retention_by_DNA_RNA_sequencing_depth DONE")
 
 
 def plot_cCRE_retention_by_DNA_RNA_sequencing_depth(reps_sampling_df_ccre: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.ccre_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_ccre)
     const.save_fig(fig, "cCRE_retention_by_DNA_RNA_sequencing_depth", output_path)
-    print("cCRE_retention_by_DNA_RNA_sequencing_depth DONE")
+    click.echo("cCRE_retention_by_DNA_RNA_sequencing_depth DONE")
 
 
 def plot_allelic_pairs_hexbin(pair_df: pd.DataFrame, output_path: str):
 
-    plt.clf()
     fig, _ = plot_lib.allelic_pairs_hexbin_plot(pair_df, colorbar=False)
     const.save_fig(fig, "Cross_validation_allelic_pairs", output_path)
 
     plt.clf()
     fig, _ = plot_lib.allelic_pairs_hexbin_plot(pair_df, colorbar=True)
     const.save_fig(fig, "Cross_validation_allelic_pairs_w_bar", output_path)
-    print("Cross_validation_allelic_pairs DONE")
+    click.echo("Cross_validation_allelic_pairs DONE")
 
 
 def plot_cell_types_hexbin(cell_type_df: pd.DataFrame, output_path: str) -> None:
 
-    plt.clf()
     fig, _ = plot_lib.cell_types_hexbin_plot(cell_type_df, colorbar=False)
     const.save_fig(fig, "Cross_validation_cell_types", output_path)
 
     plt.clf()
     fig, _ = plot_lib.cell_types_hexbin_plot(cell_type_df, colorbar=True)
     const.save_fig(fig, "Cross_validation_cell_types_w_bar", output_path)
-
-    print("Cross_validation_cell_types DONE")
+    click.echo("Cross_validation_cell_types DONE")
 
 
 def plot_diff_activity_corr_reps_hexbin(pair_rep_df: pd.DataFrame, output_path: str) -> None:
 
-    plt.clf()
     fig, _ = plot_lib.diff_activity_corr_reps_hexbin_plot(pair_rep_df, colorbar=True)
     const.save_fig(fig, "Correlation_of_differential_activity_between_replicates_w_bar", output_path)
 
     plt.clf()
     fig, _ = plot_lib.diff_activity_corr_reps_hexbin_plot(pair_rep_df, colorbar=False)
     const.save_fig(fig, "Correlation_of_differential_activity_between_replicates", output_path)
-
-    print("Correlation_of_differential_activity_between_replicates DONE")
+    click.echo("Correlation_of_differential_activity_between_replicates DONE")
 
 
 def plot_sample_clustering(reads_df: pd.DataFrame, metadata_df: pd.DataFrame, output_path: str) -> None:
-    plt.clf()
+
     fig, _ = plot_lib.sample_clustering_plot(reads_df, metadata_df)
     const.save_fig(fig, "Sample_clustering", output_path)
-    print("Sample_clustering DONE")
+    click.echo("Sample_clustering DONE")
 
 
 @click.group(help="MPRA QC Activity plots.")
@@ -635,9 +688,9 @@ def control_boxplots(activity_file: str, controls_file: str, output_path: str) -
     activity_df = pd.read_csv(activity_file)
     control_df = pd.read_csv(controls_file)
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
-    pos_olg = group_dict["positive_ctrl"]
-    neg_olg = group_dict["negative_ctrl"]
-    test_olg = group_dict["test_cCRE"]
+    pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
+    neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
+    test_olg = group_dict["test_cCRE"] if "test_cCRE" in group_dict else []
     plot_control_boxplots(activity_df, neg_olg, pos_olg, test_olg, output_path)
 
 
@@ -772,8 +825,8 @@ def ratio_correlation_with_controls(activity_per_rep_file: str, controls_file: s
     activity_by_rep_df = pd.read_csv(activity_per_rep_file)
     control_df = pd.read_csv(controls_file)
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
-    pos_olg = group_dict["positive_ctrl"]
-    neg_olg = group_dict["negative_ctrl"]
+    pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
+    neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
     plot_ratio_correlation_with_controls(activity_by_rep_df, pos_olg, neg_olg, output_path)
 
 

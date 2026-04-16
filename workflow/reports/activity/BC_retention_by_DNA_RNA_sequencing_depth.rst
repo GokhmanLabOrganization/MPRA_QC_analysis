@@ -1,0 +1,3 @@
+**Legend:** The relationship between sequencing depth and the percentage of retained BCs. Data is downsampled in order to assess whether we have reached saturation in the percentage of retained BCs. Then, data is extrapolated to predict whether additional sequencing would help improve the results.
+
+**Interpretation:** The successful example showcases sufficient sequencing depth: 3-fold more sequencing will only increase BC DNA retention from ~87% to 94% (1.08-fold), and BC RNA from 92% to 95% (1.03-fold). The unsuccessful example showcases suboptimal RNA sequencing depth: additional sequencing is predicted to increase the number of retained BCs by 1.33-fold (from 24% to 32%).

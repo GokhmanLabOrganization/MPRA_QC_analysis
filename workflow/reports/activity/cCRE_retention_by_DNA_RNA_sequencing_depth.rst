@@ -1,0 +1,3 @@
+**Legend:** The relationship between sequencing depth and the percentage of retained cCREs. Data is downsampled in order to assess whether we have reached saturation in the percentage of retained cCREs. Then, data is extrapolated to predict whether additional sequencing would help improve the results.
+
+**Interpretation:** The successful example showcases sufficient sequencing depth: 3-fold more sequencing will not increase cCRE retention. The unsuccessful example showcases suboptimal RNA sequencing depth: additional sequencing is predicted to increase the percentage of retained cCREs from 66% to 72%.

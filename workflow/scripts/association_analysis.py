@@ -78,45 +78,44 @@ def feature_dict_creator(fasta_path: str) -> tuple[dict, set, int]:
 def BCs_per_cCRE_plot(final_counts_df, output_path):
     fig, _ = plot_lib.BCs_per_cCRE_plot(final_counts_df)
     const.save_fig(fig, "BCs_per_cCRE", output_path)
-    print("BCs_per_cCRE DONE")
+    click.echo("BCs_per_cCRE DONE")
 
 
-def Reads_per_association_plot(before_min_assoc_df, output_path):
-    fig, _ = plot_lib.Reads_per_association_plot(before_min_assoc_df)
+def reads_per_association_plot(before_min_assoc_df, output_path):
+    fig, _ = plot_lib.reads_per_association_plot(before_min_assoc_df)
     const.save_fig(fig, "Reads_per_association", output_path)
-    print("Reads_per_association DONE")
+    click.echo("Reads_per_association DONE")
 
 
-def Retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set, output_path: str) -> None:
-    fig, _ = plot_lib.Retained_cCREs_plot(final_counts_df, full_oligo_list)
+def retained_cCREs_plot(final_counts_df: pd.DataFrame, full_oligo_list: set, output_path: str) -> None:
+    fig, _ = plot_lib.retained_cCREs_plot(final_counts_df, full_oligo_list)
     const.save_fig(fig, "Retained_cCREs", output_path)
-    print("Retained_cCREs DONE")
+    click.echo("Retained_cCREs DONE")
 
 
 def cCREs_per_BC_plot(promiscuity_counts_df: pd.DataFrame, output_path: str) -> None:
     fig, _ = plot_lib.cCREs_per_BC_plot(promiscuity_counts_df)
     const.save_fig(fig, "cCREs_per_BC", output_path)
-    print("cCREs_per_BC DONE")
+    click.echo("cCREs_per_BC DONE")
 
 
 def PCR_bias_GC_plot(final_counts_df, output_path):
     fig, _ = plot_lib.PCR_bias_GC_plot(final_counts_df)
     const.save_fig(fig, "PCR_bias_GC", output_path)
-    print("PCR_bias_GC DONE")
+    click.echo("PCR_bias_GC DONE")
 
 
 def PCR_bias_G_stretches_plot(final_counts_df, output_path):
     fig, _ = plot_lib.PCR_bias_G_stretches_plot(final_counts_df)
     const.save_fig(fig, "PCR_bias_G_stretches", output_path)
-    print("PCR_bias_G_stretches DONE")
+    click.echo("PCR_bias_G_stretches DONE")
 
 
 def downsampling_Retained_cCREs_plot(oligo_coverage_df: pd.DataFrame, output_path: str) -> None:
 
     fig, _ = plot_lib.downsampling_Retained_cCREs_plot(oligo_coverage_df, output_path)
-
     const.save_fig(fig, "Downsampling_Retained_cCREs", output_path)
-    print("Downsampling_Retained_cCREs DONE")
+    click.echo("Downsampling_Retained_cCREs DONE")
 
 
 def downsampling_Barcodes_per_cCRE_plot(downsampling_df_total: pd.DataFrame, output_path: str) -> None:
@@ -189,7 +188,7 @@ def final(design_file: str, associations_file: str, output_path: str) -> None:  
     feature_dict, oligo_list, _ = feature_dict_creator(design_file)
     counts_df = counts_df_creator(final_associations, oligo_list, feature_dict)
     BCs_per_cCRE_plot(counts_df, output_path)
-    Retained_cCREs_plot(counts_df, oligo_list, output_path)
+    retained_cCREs_plot(counts_df, oligo_list, output_path)
     PCR_bias_GC_plot(counts_df, output_path)
     PCR_bias_G_stretches_plot(counts_df, output_path)
 
@@ -226,8 +225,10 @@ def before_minimum_observations(associations_file: str, design_file: str | None,
     associations_before_minimum_observations = pd.read_csv(associations_file)
     if design_file:
         _, oligo_list, _ = feature_dict_creator(design_file)
-        associations_before_minimum_observations = associations_before_minimum_observations.loc[associations_before_minimum_observations['cCRE'].isin(oligo_list)]
-    Reads_per_association_plot(associations_before_minimum_observations, output_path)
+        associations_before_minimum_observations = associations_before_minimum_observations.loc[
+            associations_before_minimum_observations["cCRE"].isin(oligo_list)
+        ]
+    reads_per_association_plot(associations_before_minimum_observations, output_path)
 
 
 @association.command(help="Associations QC plots before minimum observation filtering.")
@@ -263,7 +264,9 @@ def before_promiscuity(associations_file: str, design_file: str | None, output_p
     associations_before_promiscuity = pd.read_csv(associations_file)
     if design_file:
         _, oligo_list, _ = feature_dict_creator(design_file)
-        associations_before_promiscuity=associations_before_promiscuity.loc[associations_before_promiscuity['cCRE'].isin(oligo_list)]
+        associations_before_promiscuity = associations_before_promiscuity.loc[
+            associations_before_promiscuity["cCRE"].isin(oligo_list)
+        ]
     prom_counts_df = barcode_df_counts_creator(associations_before_promiscuity)
     cCREs_per_BC_plot(prom_counts_df, output_path)
 

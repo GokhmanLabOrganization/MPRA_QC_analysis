@@ -3,6 +3,7 @@
 ################################
 
 SCRIPTS_DIR = "../scripts"
+REPORTS_DIR = "../reports"
 ENVS_DIR = "../envs"
 
 
@@ -14,6 +15,10 @@ def getScript(name):
     return getWorkflowFile(SCRIPTS_DIR, name)
 
 
+def getReport(name):
+    return getWorkflowFile(REPORTS_DIR, name)
+
+
 def getCondaEnv(name):
     return getWorkflowFile(ENVS_DIR, name)
 
@@ -23,9 +28,9 @@ from snakemake.utils import validate
 import pandas as pd
 
 # Workaround: validate() is broken from Snakemake 9.5.1 to snakemake 9.14.7 in remote jobs
-if version.parse(snakemake.__version__) >= version.parse("9.5.1") and version.parse(
-    snakemake.__version__
-) <= version.parse("9.14.7"):
+if version.parse(snakemake.__version__) >= version.parse("9.5.1") and version.parse(snakemake.__version__) <= version.parse(
+    "9.14.7"
+):
     from snakemake_interface_executor_plugins.settings import ExecMode
 
     # Use the global 'workflow' variable directly as recommended by Snakemake
@@ -50,6 +55,81 @@ if "activity" in config:
     validate(activity_files, schema="../schemas/activity_file.schema.yml")
 
 
+def add_or_replace_file_in_df(df: pd.DataFrame, file_name: str, file_path: str) -> pd.DataFrame:
+    if (df["file"] == file_name).any():
+        df.loc[df["file"] == file_name, "path"] = file_path
+    else:
+        df = pd.concat(
+            [
+                df,
+                pd.DataFrame([{"file": file_name, "path": file_path}]),
+            ],
+            ignore_index=True,
+        )
+    return df
+
+
+if "mprasnakeflow" in config:
+    if "assignment" in config["mprasnakeflow"]:
+        association_files = add_or_replace_file_in_df(
+            association_files,
+            "final_associations",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/association/final_associations.csv.gz",
+        )
+        association_files = add_or_replace_file_in_df(
+            association_files,
+            "associations_before_promiscuity",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/association/associations_before_promiscuity.csv.gz",
+        )
+        association_files = add_or_replace_file_in_df(
+            association_files,
+            "associations_before_minimum_observations",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/association/associations_before_minimum_observations.csv.gz",
+        )
+        association_files = add_or_replace_file_in_df(
+            association_files,
+            "associations_downsampling_path",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/association/downsample",
+        )
+    if "experiment" in config["mprasnakeflow"]:
+        activity_files = add_or_replace_file_in_df(
+            activity_files,
+            "activity_per_rep",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/activity/activity_per_rep.csv.gz",
+        )
+        activity_files = add_or_replace_file_in_df(
+            activity_files,
+            "downsampling_ratio_path",
+            f"results/{config['project']}/preprocessing/mprasnakeflow/activity/downsampling_ratio",
+        )
+        if "labels" in config["mprasnakeflow"]["experiment"]:
+            activity_files = add_or_replace_file_in_df(
+                activity_files,
+                "activity_df",
+                f"results/{config['project']}/preprocessing/mprasnakeflow/activity/activity_df.csv.gz",
+            )
+            activity_files = add_or_replace_file_in_df(
+                activity_files,
+                "downsampling_activity_path",
+                f"results/{config['project']}/preprocessing/mprasnakeflow/activity/downsampling_activity",
+            )
+        if "comparative_map" in config["mprasnakeflow"]["experiment"]:
+            activity_files = add_or_replace_file_in_df(
+                activity_files,
+                "comparative_df",
+                f"results/{config['project']}/preprocessing/mprasnakeflow/activity/comparative_df.csv.gz",
+            )
+            activity_files = add_or_replace_file_in_df(
+                activity_files,
+                "allelic_pairs_df",
+                f"results/{config['project']}/preprocessing/mprasnakeflow/activity/allelic_pairs_df.csv.gz",
+            )
+            activity_files = add_or_replace_file_in_df(
+                activity_files,
+                "allelic_pairs_replicates_df",
+                f"results/{config['project']}/preprocessing/mprasnakeflow/activity/allelic_pairs_replicates_df.csv.gz",
+            )
+
 ################################
 #### HELPERS AND EXCEPTIONS ####
 ################################
@@ -66,10 +146,7 @@ def get_association_final_plots(association_df: pd.DataFrame) -> list:
     if association_df.empty:
         return []
     else:
-        if (
-            "cCRE_fasta" in association_df["file"].values
-            and "final_associations" in association_df["file"].values
-        ):
+        if "cCRE_fasta" in association_df["file"].values and "final_associations" in association_df["file"].values:
             return [
                 "BCs_per_cCRE",
                 "Retained_cCREs",
@@ -132,10 +209,7 @@ def get_activity_control_boxplots_plots(activity_df: pd.DataFrame) -> list:
     if activity_df.empty:
         return []
     else:
-        if (
-            "activity_df" in activity_df["file"].values
-            and "control_df" in activity_df["file"].values
-        ):
+        if "activity_df" in activity_df["file"].values and "control_df" in activity_df["file"].values:
             return ["Activity_of_controls"]
     return []
 
@@ -153,11 +227,7 @@ def get_activity_replicability_by_activity_plots(activity_df: pd.DataFrame) -> l
 
 
 def get_activity_gc_content_bias_plots(activity_df: pd.DataFrame) -> list:
-    if (
-        not activity_df.empty
-        and "activity_df" in activity_df["file"].values
-        and "cCRE_fasta" in activity_df["file"].values
-    ):
+    if not activity_df.empty and "activity_df" in activity_df["file"].values and "cCRE_fasta" in activity_df["file"].values:
         return ["DNA_counts_vs_GC_content"]
     else:
         return []
@@ -190,10 +260,7 @@ def get_activity_ratio_correlation_with_controls_plots(
 
 
 def get_activity_downsampling_plots(activity_df: pd.DataFrame) -> list:
-    if (
-        not activity_df.empty
-        and "downsampling_activity_path" in activity_df["file"].values
-    ):
+    if not activity_df.empty and "downsampling_activity_path" in activity_df["file"].values:
         return ["Activity_by_sequencing_depth"]
     else:
         return []
@@ -202,10 +269,7 @@ def get_activity_downsampling_plots(activity_df: pd.DataFrame) -> list:
 def get_activity_reproducibility_by_sequencing_depth_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if (
-        not activity_df.empty
-        and "downsampling_activity_path" in activity_df["file"].values
-    ):
+    if not activity_df.empty and "downsampling_ratio_path" in activity_df["file"].values:
         return [
             "BC_retention_by_DNA_RNA_sequencing_depth",
             "cCRE_retention_by_DNA_RNA_sequencing_depth",
@@ -217,10 +281,7 @@ def get_activity_reproducibility_by_sequencing_depth_plots(
 def get_activity_mimimise_noise_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if (
-        not activity_df.empty
-        and "different_std_threshold_analysis" in activity_df["file"].values
-    ):
+    if not activity_df.empty and "different_std_threshold_analysis" in activity_df["file"].values:
         return [
             "Minimizing_noise",
         ]
@@ -314,10 +375,7 @@ def get_activity_cell_types_plots(
 def get_activity_comparative_replicates_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if (
-        not activity_df.empty
-        and "allelic_pairs_replicates_df" in activity_df["file"].values
-    ):
+    if not activity_df.empty and "allelic_pairs_replicates_df" in activity_df["file"].values:
         return [
             "Correlation_of_differential_activity_between_replicates_w_bar",
             "Correlation_of_differential_activity_between_replicates",

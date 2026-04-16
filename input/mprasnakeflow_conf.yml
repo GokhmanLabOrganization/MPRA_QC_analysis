@@ -1,0 +1,6 @@
+---
+association: input/liver_mpra.tsv
+mprasnakeflow:
+  assignment:
+    barcodes_incl_other: /data/cephfs-1/scratch/groups/kircher/MPRA/MPRA_snakeflow_test/assoc_basic/results/assignment/assocBasic/barcodes_incl_other.tsv.gz
+    assignment_barcodes: /data/cephfs-1/scratch/groups/kircher/MPRA/MPRA_snakeflow_test/assoc_basic/results/assignment/assocBasic/assignment_barcodes.default.tsv.gz
