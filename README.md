@@ -161,6 +161,22 @@ snakemake --cores <number_of_cores> \
 
 The results will be stored within the current folder you are running the pipeline.
 
+## Report
+
+After a successful run, you can generate a self-contained Snakemake HTML report that summarizes preprocessing and QC figures.
+
+Generate a report in the project root. Make sure you use the same config as before, so the report can find the generated files:
+
+```bash
+snakemake --cores 1 \
+--config activity=<path_to_activity_file> association=<path_to_association_file> \
+--report report.html
+```
+
+This creates `report.html` in the current working directory. You can open it in any browser or share it with your collaborators. The report groups outputs by analysis sections such as Association, Activity, and Preprocessing. Ro to the results section in the main menu bar on the left.
+
+
+
 ## MPRAsnakeflow outputs as inputs for the pipeline
 
 The pipeline is designed to directly use the outputs of MPRAsnakeflow as inputs for the QC analysis. If you have run MPRAsnakeflow and have the output files, you can specify the paths to these files in the configuration file for the MPRA_QC_analysis pipeline. This allows you to seamlessly integrate the preprocessing steps from MPRAsnakeflow with the QC analysis provided by this pipeline. For quantification analysis of the activity step we use run the software [BCalm](https://doi.org/10.1186/s12859-025-06065-9).
