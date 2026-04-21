@@ -638,8 +638,8 @@ def rna_dna_ratio_hexbin_plot(act_df, DNA_counts, RNA_counts) -> tuple[Figure, A
     ax.set_yticks([0, 250])
 
     # Set axis labels
-    ax.set_xlabel("DNA count")
-    ax.set_ylabel("RNA count")
+    ax.set_xlabel("Normalized DNA counts")
+    ax.set_ylabel("Normalized RNA counts")
 
     cbar = plt.colorbar(hb, ax=ax)
     cbar.set_label("log10(count) per hexbin")  # or 'log10(count)' if using LogNorm
@@ -1349,31 +1349,46 @@ def distance_to_tss_by_activity_plot(dist_df: pd.DataFrame) -> tuple[Figure, Axe
     dist_df.loc[dist_df["mask"], "bin"] = qbins
     bin_order = ["Inactive", "Q1", "Q2", "Q3", "Q4", "Q5"]
 
-    fig, ax_box = plt.subplots(figsize=(4, 8))
-    sns.boxplot(
-        data=dist_df,
-        x="bin",
-        y="log10_distance",
-        showfliers=False,
-        color=plot_color_pallete["cCRE"],
-        ax=ax_box,
-        order=bin_order,
-        medianprops={"color": "#FFFFFF", "linewidth": 2},
+    summary = (
+        dist_df.groupby("bin", observed=False)["log10_distance"]
+        .agg(["mean", "std"])
+        .reindex(bin_order)
+        .reset_index()
     )
-    ax_box.set_ylabel(r"Distance from TSS (bp, $\mathbf{log_{2}}\!$)")
-    ax_box.set_xlabel("Activity quantile")
-    ax_box.tick_params(axis="x", labelrotation=90)
 
-    ax_box.set_yticks([ax_box.get_yticks()[1], ax_box.get_yticks()[-1]])
+    fig, ax = plt.subplots(figsize=(4, 8))
 
-    return fig, ax_box
+    x = np.arange(len(summary))
+    y = summary["mean"].to_numpy()
+    yerr = summary["std"].to_numpy()
+
+    ax.errorbar(
+        x,
+        y,
+        yerr=yerr,
+        fmt="o",
+        capsize=5,
+        linewidth=2,
+        markersize=18,
+        color=plot_color_pallete["cCRE"],
+    )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(bin_order, rotation=90)
+    ax.set_ylabel(r"Distance from TSS (bp, $\mathbf{log_{10}}\!$)")
+    ax.set_xlabel("Activity quantile")
+
+    ax.set_yticks([ax.get_yticks()[1], ax.get_yticks()[-1]])
+
+    return fig, ax
 
 
 def ai_predictions_vs_activity_hexbin_plot(AI_pred_df: pd.DataFrame, colorbar: bool) -> tuple[Figure, Axes]:
     y = np.asarray(AI_pred_df["exp: MPRA_activity"].values)
     x = np.asarray(AI_pred_df["AI: predicted_activity"].values)
 
-    r = pearsonr(x, y)[0]
+    r_p = pearsonr(x, y)[0]
+    r_s = spearmanr(x, y)[0]
     fig, ax_scat = plt.subplots()
     hb = ax_scat.hexbin(
         x,
@@ -1384,10 +1399,15 @@ def ai_predictions_vs_activity_hexbin_plot(AI_pred_df: pd.DataFrame, colorbar: b
         norm=LogNorm(vmin=1, vmax=1000),  # cap at 100 counts, log-scaled
         linewidths=0,
     )
+    ax_scat.set_xlim(right=3)
+    ax_scat.set_ylim(top=10)
     ax_scat.set_xlabel("AI-predicted activity")
     ax_scat.set_ylabel("Experimentally measured activity")
     ax_scat.text(
-        0.05, 0.95, s=rf"r= {r:.3f}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
+        0.05, 0.95, s=rf"Pearson's r= {r_p:.3f}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
+    )
+    ax_scat.text(
+        0.05, 0.90, s=rf"Spearman's r= {r_s:.3f}", transform=ax_scat.transAxes, verticalalignment="top", horizontalalignment="left"
     )
     if colorbar:
         cbar = plt.colorbar(hb, ax=ax_scat)
