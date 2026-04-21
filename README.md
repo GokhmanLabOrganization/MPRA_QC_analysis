@@ -69,11 +69,11 @@ git clone https://github.com/GokhmanLabOrganization/MPRA_QC_analysis.git
 cd MPRA_QC_analysis
 ```
 
-To run the workflow you need to have [Snakemake](https://snakemake.github.io/) installed. You can install [Snakemake](https://snakemake.github.io/) using **conda** or **pip**. We will use conda for installation and create a new conda environment `MPRA_QC_analysis`.
+To run the workflow you need to have [Snakemake](https://snakemake.github.io/) installed (min required version 8.24.1). You can install [Snakemake](https://snakemake.github.io/) using **conda** or **pip**. We will use conda for installation and create a new conda environment `MPRA_QC_analysis`.
 
 ```bash
 # Create the conda environment
-conda create -n MPRA_QC_analysis snakemake
+conda create -n MPRA_QC_analysis "snakemake>=8.24.1"
 # Activate the environment
 conda activate MPRA_QC_analysis
 ```
