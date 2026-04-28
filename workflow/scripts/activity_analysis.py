@@ -397,9 +397,9 @@ def plot_control_boxplots(
     click.echo("Activity_of_controls DONE")
 
 
-def plot_cCRE_annotation_by_activity(annotated_screen_df: pd.DataFrame, output_path: str) -> None:
+def plot_cCRE_annotation_by_activity(genomic_annotations_df: pd.DataFrame, output_path: str) -> None:
 
-    fig, _ = plot_lib.cCRE_annotation_by_activity_plot(annotated_screen_df)
+    fig, _ = plot_lib.cCRE_annotation_by_activity_plot(genomic_annotations_df)
     const.save_fig(fig, "Genomic_annotations", output_path)
     click.echo("Genomic_annotations DONE")
 
@@ -916,11 +916,11 @@ def mimimise_noise(sdt_thresholds_path: str, output_path: str) -> None:
 
 @activity.command(help="TODO.")
 @click.option(
-    "--screen",
-    "screen_path",
+    "--genommic_annotations",
+    "genommic_annotations_path",
     required=True,
     type=click.Path(exists=True, readable=True),
-    help="Path to the screen data.",
+    help="Path to the genomic annotations data.",
 )
 @click.option(
     "--output-path",
@@ -929,17 +929,17 @@ def mimimise_noise(sdt_thresholds_path: str, output_path: str) -> None:
     type=click.Path(exists=True, dir_okay=True, writable=True),
     help="Path to the output directory for MPRA QC analysis results.",
 )
-def screen_annotations(screen_path: str, output_path: str) -> None:
+def genomic_annotations(genommic_annotations_path: str, output_path: str) -> None:
     """
     TODO
 
     Args:
-        screen_path (str): Path to the screen data.
+        genommic_annotations_path (str): Path to the genommic annotations data.
         output_path (str): Path to the output directory for MPRA QC analysis results.
     """
 
-    screen_df = pd.read_csv(screen_path)
-    plot_cCRE_annotation_by_activity(screen_df, output_path)
+    genommic_annotations_df = pd.read_csv(genommic_annotations_path)
+    plot_cCRE_annotation_by_activity(genommic_annotations_df, output_path)
 
 
 @activity.command(help="TODO.")

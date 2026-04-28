@@ -31,7 +31,7 @@ m_palette = {
     "DNA": "D",
 }
 
-screen_ccre_colors = {
+genomic_annotations_ccre_colors = {
     "Promoter": "#D63B30",  # strong red – promoter‐like signature
     "Proximal Enhancer": "#D36728",  # dark orange – proximal enhancer‐like signature
     "Distal Enhancer": "#F8BE35",  # gold/yellow – distal enhancer‐like signature
@@ -643,6 +643,40 @@ def rna_dna_ratio_hexbin_plot(act_df, DNA_counts, RNA_counts) -> tuple[Figure, A
 
     cbar = plt.colorbar(hb, ax=ax)
     cbar.set_label("log10(count) per hexbin")  # or 'log10(count)' if using LogNorm
+
+    return fig, ax
+
+def rna_dna_ratio_hexbin_loglog_plot(act_df, DNA_counts, RNA_counts) -> tuple[Figure, Axes]:
+    # Prepare the data
+    x = act_df[DNA_counts].values
+    y = act_df[RNA_counts].values
+
+    # Keep only positive values for log-log plotting
+    mask = (x > 0) & (y > 0) 
+    x = x[mask]
+    y = y[mask]
+
+    fig, ax = plt.subplots()
+
+    hb = ax.hexbin(
+        x,
+        y,
+        gridsize=200,
+        cmap=custom_cmap_bolder,
+        mincnt=1,
+        norm=LogNorm(vmin=1, vmax=1000),
+        linewidths=0,
+        xscale="log",
+        yscale="log",
+    )
+
+
+    # Set axis labels
+    ax.set_xlabel("Normalized DNA counts")
+    ax.set_ylabel("Normalized RNA counts")
+
+    cbar = plt.colorbar(hb, ax=ax)
+    cbar.set_label("Count per hexbin")
 
     return fig, ax
 
@@ -1297,16 +1331,16 @@ def minimizing_noise_hexbin_plot(
     return fig, axes
 
 
-def cCRE_annotation_by_activity_plot(annotated_screen_df) -> tuple[Figure, Axes]:
+def cCRE_annotation_by_activity_plot(genomic_annotations_df) -> tuple[Figure, Axes]:
 
-    annotated_screen_df = annotated_screen_df.copy()
-    annotated_screen_df["mask"] = annotated_screen_df["activity_status"].apply(lambda x: True if x == "active" else False)
+    genomic_annotations_df = genomic_annotations_df.copy()
+    genomic_annotations_df["mask"] = genomic_annotations_df["activity_status"].apply(lambda x: True if x == "active" else False)
     qbins = pd.qcut(
-        annotated_screen_df.loc[annotated_screen_df["mask"], "activity_statistic"], q=5, labels=[f"Q{i}" for i in range(1, 6)]
+        genomic_annotations_df.loc[genomic_annotations_df["mask"], "activity_statistic"], q=5, labels=[f"Q{i}" for i in range(1, 6)]
     )
-    annotated_screen_df["bin"] = "Inactive"
-    annotated_screen_df.loc[annotated_screen_df["mask"], "bin"] = qbins
-    counts_df = pd.DataFrame(annotated_screen_df.groupby("bin")["class"].value_counts())
+    genomic_annotations_df["bin"] = "Inactive"
+    genomic_annotations_df.loc[genomic_annotations_df["mask"], "bin"] = qbins
+    counts_df = pd.DataFrame(genomic_annotations_df.groupby("bin")["class"].value_counts())
     counts_df = counts_df.reset_index()
     counts_df_wide = counts_df.pivot(index="bin", columns=["class"], values="count")
     counts_df_wide = counts_df_wide.reset_index()
@@ -1323,7 +1357,7 @@ def cCRE_annotation_by_activity_plot(annotated_screen_df) -> tuple[Figure, Axes]
     ]
 
     fig, ax = plt.subplots()
-    ax = counts_df_wide_prop.plot(x="bin", kind="bar", stacked=True, color=screen_ccre_colors, ax=ax)
+    ax = counts_df_wide_prop.plot(x="bin", kind="bar", stacked=True, color=genomic_annotations_ccre_colors, ax=ax)
 
     # move legend to the side
     ax.legend(
