@@ -289,10 +289,10 @@ def get_activity_mimimise_noise_plots(
         return []
 
 
-def get_activity_screen_annotations_plots(
+def get_activity_genomic_annotations_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if not activity_df.empty and "screen_df" in activity_df["file"].values:
+    if not activity_df.empty and "genomic_annotations_df" in activity_df["file"].values:
         return [
             "Genomic_annotations",
         ]

@@ -457,11 +457,11 @@ rule activity_mimimise_noise:
         """
 
 
-rule activity_screen_annotations:
+rule activity_genomic_annotations:
     input:
-        screen=lookup(
+        genomic_annotations=lookup(
             within=activity_files,
-            query="file == 'screen_df'",
+            query="file == 'genomic_annotations_df'",
             cols=["path"],
         ),
         script=getScript("mpra_qc_analysis.py"),
@@ -472,7 +472,7 @@ rule activity_screen_annotations:
     output:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
-            plot=get_activity_screen_annotations_plots(activity_files),
+            plot=get_activity_genomic_annotations_plots(activity_files),
             file_type=["pdf", "eps", "svg"],
         ),
         report(
@@ -487,14 +487,14 @@ rule activity_screen_annotations:
             },
         ),
     log:
-        "logs/activity/screen_annotations.{project}.log",
+        "logs/activity/genomic_annotations.{project}.log",
     conda:
         getCondaEnv("default.yml")
     params:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity screen-annotations --screen {input.screen} --output-path {params.outdir} > {log} 2>&1
+         python {input.script} activity genomic-annotations --genomic-annotations {input.genomic_annotations} --output-path {params.outdir} > {log} 2>&1
         """
 
 

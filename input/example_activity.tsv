@@ -6,7 +6,7 @@ std_analysis_df	/path/to/input/files/sample_inputs/std_analthis sysis_df.csv
 downsampling_activity_path	/path/to/input/files/sample_inputs/downsampling/
 downsampling_ratio_path	/path/to/input/files/sample_inputs//downsampling/
 comparative_df	/path/to/input/files/sample_inputs/comparative_df.csv
-screen_df	/path/to/input/files/sample_inputs/screen_df.csv
+genomic_annotations_df	/path/to/input/files/sample_inputs/screen_df.csv
 tss_df	/path/to/input/files/sample_inputs/tss_df.csv
 AI_df	/path/to/input/files/sample_inputs/AI_df.csv
 AI_comparative_df	/path/to/input/files/sample_inputs/AI_comparative_df.csv

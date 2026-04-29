@@ -916,8 +916,8 @@ def mimimise_noise(sdt_thresholds_path: str, output_path: str) -> None:
 
 @activity.command(help="TODO.")
 @click.option(
-    "--genommic_annotations",
-    "genommic_annotations_path",
+    "--genomic-annotations",
+    "genomic_annotations_path",
     required=True,
     type=click.Path(exists=True, readable=True),
     help="Path to the genomic annotations data.",
@@ -929,17 +929,17 @@ def mimimise_noise(sdt_thresholds_path: str, output_path: str) -> None:
     type=click.Path(exists=True, dir_okay=True, writable=True),
     help="Path to the output directory for MPRA QC analysis results.",
 )
-def genomic_annotations(genommic_annotations_path: str, output_path: str) -> None:
+def genomic_annotations(genomic_annotations_path: str, output_path: str) -> None:
     """
     TODO
 
     Args:
-        genommic_annotations_path (str): Path to the genommic annotations data.
+        genomic_annotations_path (str): Path to the genomic annotations data.
         output_path (str): Path to the output directory for MPRA QC analysis results.
     """
 
-    genommic_annotations_df = pd.read_csv(genommic_annotations_path)
-    plot_cCRE_annotation_by_activity(genommic_annotations_df, output_path)
+    genomic_annotations_df = pd.read_csv(genomic_annotations_path)
+    plot_cCRE_annotation_by_activity(genomic_annotations_df, output_path)
 
 
 @activity.command(help="TODO.")
