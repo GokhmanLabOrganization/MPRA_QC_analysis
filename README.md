@@ -129,7 +129,7 @@ Or the association analysis:
 ```bash
 snakemake --cores <number_of_cores> \
 --sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
---config associatiion=<path_to_association_file>
+--config association=<path_to_association_file>
 ```
 
 You can run both analyses together by including both paths in the configuration file:
