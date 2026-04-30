@@ -1346,8 +1346,8 @@ def cCRE_annotation_by_activity_plot(genomic_annotations_df) -> tuple[Figure, Ax
     counts_df_wide = counts_df_wide.reset_index()
     cols = counts_df_wide.columns[1:]
     counts_df_wide_prop = counts_df_wide.copy()
-    counts_df_wide_prop[cols] = counts_df_wide[cols].div(counts_df_wide[cols].sum(axis=0), axis=1)
-    # counts_df_wide_prop = counts_df_wide.iloc[:, 1:].apply(lambda x: x / x.sum(), axis=1)
+    #counts_df_wide_prop[cols] = counts_df_wide[cols].div(counts_df_wide[cols].sum(axis=0), axis=1)
+    counts_df_wide_prop = counts_df_wide.iloc[:, 1:].apply(lambda x: x / x.sum(), axis=1)
     counts_df_wide_prop["bin"] = counts_df_wide["bin"]
     bin_order = ["Inactive", "Q1", "Q2", "Q3", "Q4", "Q5"]
     counts_df_wide_prop["bin"] = pd.Categorical(counts_df_wide_prop["bin"], categories=bin_order, ordered=True)
