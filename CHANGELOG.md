@@ -12,7 +12,7 @@
 
 * :bug: Use genomic_annotations_df in workflow instead of screen_df ([40fdf88](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/40fdf88207759ef43048366ccb710e03bde79e1e))
 * **activity:** Allow reads_by_group and samples_metadata as input (json schema) ([05e01e9](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/05e01e9e64ea85c063a1279b2325041cee06de56))
-* genomic annotaions bug fixed ([#73](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/issues/73)) ([df34537](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/df345371ee13bacbd4c1f159d9358d5f40b063fb))
+* genomic annotation bug fixed ([#73](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/issues/73)) ([df34537](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/df345371ee13bacbd4c1f159d9358d5f40b063fb))
 
 ## 0.1.0 (2026-04-16)
 
