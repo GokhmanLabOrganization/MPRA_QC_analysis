@@ -120,7 +120,7 @@ Using the [Snakemake](https://snakemake.github.io/) pipeline you can specify whi
 
 ```bash
 snakemake --cores <number_of_cores> \
---sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
+--sdm apptainer \
 --config activity=<path_to_activity_file>
 ```
 
@@ -128,14 +128,16 @@ Or the association analysis:
 
 ```bash
 snakemake --cores <number_of_cores> \
---sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
+--sdm apptainer \
 --config association=<path_to_association_file>
 ```
+
+**NOTE:** If you need a different file path than your work folder you have to add them to apptainer using the snakemake command  `--apptainer-args "-B /your/new/path1 -B /your/new/path2"`
 
 You can run both analyses together by including both paths in the configuration file:
 
 ```bash
-snakemake --cores <number_of_cores> --sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`"\
+snakemake --cores <number_of_cores> --sdm apptainer\
 --config activity=<path_to_activity_file> association=<path_to_association_file>
 ```
 
@@ -143,7 +145,7 @@ The results will be in `results/MPRA_QC_analysis/` directory, with subdirectorie
 
 ```bash
 snakemake --cores <number_of_cores> \
---sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
+--sdm apptainer \
 --config activity=<path_to_activity_file> association=<path_to_association_file> project=My_MPRA
 ```
 
@@ -155,7 +157,7 @@ If you want to run the pipeline from a different folder, you can specify the pat
 
 ```bash
 snakemake --cores <number_of_cores> \
---sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
+--sdm apptainer \
 --snakefile <path_to_MPRA_QC_analysis>/MPRA_QC_analysis/workflow/Snakefile --config activity=<path_to_activity_file>
 ```
 
@@ -185,7 +187,7 @@ We use now a yaml config file to set up the inputs for the piline because we nee
 
 ```bash
 snakemake --cores <number_of_cores> \
---sdm apptainer --apptainer-args "-B $HOME/.cache/snakemake/snakemake/ -B `pwd`" \
+--sdm apptainer \
 --configfile <path_to_config_file>
 ```
 
