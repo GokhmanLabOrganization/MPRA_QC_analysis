@@ -366,6 +366,11 @@ rule activity_downsampling:
 
 rule activity_reproducibility_by_sequencing_depth:
     input:
+        downsampling_activity_path=lookup(
+            within=activity_files,
+            query="file == 'downsampling_activity_path'",
+            cols=["path"],
+        ),
         downsampling_ratio_path=lookup(
             within=activity_files,
             query="file == 'downsampling_ratio_path'",
@@ -380,6 +385,47 @@ rule activity_reproducibility_by_sequencing_depth:
         expand(
             "results/{{project}}/activity/{plot}.{file_type}",
             plot=get_activity_reproducibility_by_sequencing_depth_plots(activity_files),
+            file_type=["pdf", "eps", "svg"],
+        ),
+        report(
+            "results/{project}/activity/Reproducibility_by_sequencing_depth.png",
+            caption=getReport("activity/Reproducibility_by_sequencing_depth.rst"),
+            category="{project}",
+            subcategory="Activity",
+            labels={
+                "analysis": "Downsampling",
+                "type": "Retention",
+                "figure": "Reproducibility by Sequencing Depth",
+            },
+        ),
+    log:
+        "logs/activity/reproducibility_by_sequencing_depth.{project}.log",
+    conda:
+        getCondaEnv("default.yml")
+    params:
+        outdir=directory("results/{project}/activity/"),
+    shell:
+        """
+         python {input.script} activity reproducibility-by-sequencing-depth --downsampling-activity-path {input.downsampling_activity_path} --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} > {log} 2>&1
+        """
+
+
+rule activity_retention_by_sequencing_depth:
+    input:
+        downsampling_ratio_path=lookup(
+            within=activity_files,
+            query="file == 'downsampling_ratio_path'",
+            cols=["path"],
+        ),
+        script=getScript("mpra_qc_analysis.py"),
+        association_script=getScript("association_analysis.py"),
+        activity_script=getScript("activity_analysis.py"),
+        plot_lib=getScript("plot_lib.py"),
+        const_lib=getScript("const.py"),
+    output:
+        expand(
+            "results/{{project}}/activity/{plot}.{file_type}",
+            plot=get_activity_retention_by_sequencing_depth(activity_files),
             file_type=["pdf", "eps", "svg"],
         ),
         report(
@@ -412,7 +458,7 @@ rule activity_reproducibility_by_sequencing_depth:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity reproducibility-by-sequencing-depth --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} > {log} 2>&1
+         python {input.script} activity retention-by-sequencing-depth --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} > {log} 2>&1
         """
 
 
