@@ -827,7 +827,7 @@ def ratio_correlation_with_controls(activity_per_rep_file: str, controls_file: s
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
     pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
     neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
-    plot_ratio_correlation_with_controls(activity_by_rep_df, pos_olg, neg_olg, output_path)
+    plot_ratio_correlation_with_controls(activity_by_rep_df, neg_olg, pos_olg, output_path)
 
 
 @activity.command(help="TODO.")
