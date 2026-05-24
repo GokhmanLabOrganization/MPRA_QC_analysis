@@ -248,7 +248,7 @@ def plot_activity_downsampling(ds_path: str, output_path: str) -> None:
     click.echo("Activity_by_sequencing_depth DONE")
 
 
-def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, output_path):
+def plot_reproducibility_by_sequencing_depth(ds_activity_path: str, ds_ratio_path: str, output_path: str) -> None:
     rep_corr_by_act = []
     rep_corr_list = []
     downsampling_perc_list = np.arange(0.1, 1.01, 0.1)
@@ -870,7 +870,7 @@ def downsampling(downsampling_activity_path: str, output_path: str) -> None:
     type=click.Path(exists=True, dir_okay=True, writable=True),
     help="Path to the output directory for MPRA QC analysis results.",
 )
-def reproducibility_by_sequencing_depth(downsampling_ratio_path: str, output_path: str) -> None:
+def retention_by_sequencing_depth(downsampling_ratio_path: str, output_path: str) -> None:
     """
     TODO
 
@@ -886,6 +886,42 @@ def reproducibility_by_sequencing_depth(downsampling_ratio_path: str, output_pat
         click.echo(f"Error: {e}", err=True)
         raise
 
+@activity.command(help="TODO.")
+@click.option(
+    "--downsampling-activity-path",
+    "downsampling_activity_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
+    help="Path to the downsampling activity data.",
+)
+@click.option(
+    "--downsampling-ratio-path",
+    "downsampling_ratio_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
+    help="Path to the downsampling ratio data.",
+)
+@click.option(
+    "--output-path",
+    "output_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=True, writable=True),
+    help="Path to the output directory for MPRA QC analysis results.",
+)
+def reproducibility_by_sequencing_depth(downsampling_activity_path: str, downsampling_ratio_path: str, output_path: str) -> None:
+    """
+    TODO
+
+    Args:
+        downsampling_activity_path (str): Path to the downsampling activity data.
+        downsampling_ratio_path (str): Path to the downsampling ratio data.
+        output_path (str): Path to the output directory for MPRA QC analysis results.
+    """
+    try:
+        plot_reproducibility_by_sequencing_depth(downsampling_activity_path, downsampling_ratio_path, output_path)
+    except FileNotFoundError as e:
+        click.echo(f"Error: {e}", err=True)
+        raise
 
 @activity.command(help="TODO.")
 @click.option(
