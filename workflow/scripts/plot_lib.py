@@ -507,7 +507,7 @@ def ratio_correlation_with_controls_plot(
         edgecolors="none",
         zorder=3,
     )
-
+    
     ax.scatter(
         data=activity_by_rep[activity_by_rep["cCRE"].isin(pos)],
         x=f"RNA_DNA_ratio_log_{compare_rep1}",
