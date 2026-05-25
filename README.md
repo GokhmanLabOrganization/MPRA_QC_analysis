@@ -27,6 +27,7 @@ It is designed for researchers who want a ready-to-use, reproducible framework f
 ```text
 ├── input/ # Example inputs
 ├── Dockerfile # Dockerfile for containerized execution
+├── INPUT_FORMATS.md # Project documentation
 ├── README.md # Project documentation
 ├── environment_minimal.yml # Minimal conda environment specification
 ├── version.txt # Version information
