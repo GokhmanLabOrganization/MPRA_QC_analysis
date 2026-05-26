@@ -42,11 +42,9 @@ The `file` column of the activity manifest must be one of:
 
 ### Which inputs feed which analyses
 
-The diagram below maps each input file (left) to the QC analyses and figures it contributes to (right). Inputs are coloured by category — cCRE–BC associations, activity, differential activity, and additional data — and solid versus pale fills distinguish core inputs from derived/secondary ones.
+The Sankey diagram below maps each input file (left, numbered 1–21) to the QC analyses and figures it contributes to (right). Inputs are coloured by category — cCRE–BC associations, activity, differential activity, and additional data — and solid versus pale fills distinguish core inputs from derived or secondary ones. Input labels use the canonical file-type names defined in this document.
 
-![Sankey diagram mapping each user input file to the QC analyses and figures it feeds into, grouped by input category.](figures/input_analysis_sankey.png)
-
-> **Naming note:** the diagram uses a couple of display filenames that differ slightly from the official file-type names used in this document and the schemas: `screen_df` corresponds to `genomic_annotations_df`, and `sample_metadata` corresponds to `samples_metadata`. The file-type names above are the authoritative ones.
+![Sankey diagram mapping each numbered user input file to the QC analyses and figures it feeds into, coloured by input category.](figures/input_analysis_sankey.png)
 
 ## Configuration file
 
