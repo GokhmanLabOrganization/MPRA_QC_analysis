@@ -296,7 +296,7 @@ def get_activity_retention_by_sequencing_depth(
 def get_activity_mimimise_noise_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if not activity_df.empty and "different_std_threshold_analysis" in activity_df["file"].values:
+    if not activity_df.empty and "std_analysis_df" in activity_df["file"].values:
         return [
             "Minimizing_noise",
         ]

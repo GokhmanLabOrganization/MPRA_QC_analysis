@@ -4,6 +4,12 @@ This document is a reference for the file formats used by the MPRA quality contr
 
 > **Authority and maintenance.** The manifest and configuration structures, and the set of valid file types, are defined and validated by the schema files in [`workflow/schemas/`](workflow/schemas/) — those schemas are authoritative. The per-file *column layouts* in the later sections are documentation only (they are not schema-validated); please keep them in sync with the analysis scripts if formats change.
 
+## Pipeline overview
+
+The pipeline runs as two parallel branches — **association** and **activity** — each progressing through preprocessing, core QC, and output. Inputs can either be supplied directly by the user (custom config + input files) or derived from MPRAsnakeflow outputs during preprocessing.
+
+![Overview of the MPRA QC pipeline workflow, showing the association and activity branches from input through preprocessing, core QC, and output.](figures/pipeline_workflow.png)
+
 ## How inputs are organised
 
 The pipeline is configured through a YAML config file (validated by `config.schema.yml`). For the two analysis steps, the config points to **manifest files**:
@@ -32,7 +38,15 @@ The `file` column of the association manifest must be one of:
 
 The `file` column of the activity manifest must be one of:
 
-`cCRE_fasta`, `activity_df`, `genomic_annotations_df`, `tss_df`, `std_analysis_df`, `different_std_threshold_analysis`, `downsampling_activity_path`, `downsampling_ratio_path`, `activity_per_rep`, `comparative_df`, `AI_df`, `AI_comparative_df`, `allelic_pairs_df`, `allelic_pairs_replicates_df`, `cell_types_df`, `control_df`, `reads_by_group`, `samples_metadata`
+`cCRE_fasta`, `activity_df`, `genomic_annotations_df`, `tss_df`, `std_analysis_df`, `downsampling_activity_path`, `downsampling_ratio_path`, `activity_per_rep`, `comparative_df`, `AI_df`, `AI_comparative_df`, `allelic_pairs_df`, `allelic_pairs_replicates_df`, `cell_types_df`, `control_df`, `reads_by_group`, `samples_metadata`
+
+### Which inputs feed which analyses
+
+The diagram below maps each input file (left) to the QC analyses and figures it contributes to (right). Inputs are coloured by category — cCRE–BC associations, activity, differential activity, and additional data — and solid versus pale fills distinguish core inputs from derived/secondary ones.
+
+![Sankey diagram mapping each user input file to the QC analyses and figures it feeds into, grouped by input category.](figures/input_analysis_sankey.png)
+
+> **Naming note:** the diagram uses a couple of display filenames that differ slightly from the official file-type names used in this document and the schemas: `screen_df` corresponds to `genomic_annotations_df`, and `sample_metadata` corresponds to `samples_metadata`. The file-type names above are the authoritative ones.
 
 ## Configuration file
 
@@ -147,11 +161,9 @@ RNA and DNA count data for each cCRE, reported per replicate and combined. The r
 | `DNA_rep{i}` | `object` | DNA counts for replicate `{i}` (comma-separated list of integers) |
 | `RNA_DNA_ratio_log_rep{i}` | `float64` | log2(RNA/DNA) for replicate `{i}` |
 
-### `different_std_threshold_analysis`
+### `std_analysis_df`
 
 DNA and RNA counts after outlier filtering applied at increasing stringency: no filtering, 3 std, and 2 std. Columns are generated per outlier-filter / replicate pair, where `{outlier_filter}` denotes the filtering setting and `{rep}` the replicate.
-
-> **Note:** `different_std_threshold_analysis` is the file *type* registered in the activity manifest. The activity schema also lists `std_analysis_df` as an allowed type, but in practice this is the same data — for example, a `different_std_threshold_analysis` entry may point to a file named `std_analysis_df.csv`. Both names refer to this format.
 
 | Column | Type | Description |
 |---|---|---|

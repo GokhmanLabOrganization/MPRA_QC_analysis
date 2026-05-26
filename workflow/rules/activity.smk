@@ -466,7 +466,7 @@ rule activity_mimimise_noise:
     input:
         sdt_thresholds=lookup(
             within=activity_files,
-            query="file == 'different_std_threshold_analysis'",
+            query="file == 'std_analysis_df'",
             cols=["path"],
         ),
         script=getScript("mpra_qc_analysis.py"),
