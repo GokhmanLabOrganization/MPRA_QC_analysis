@@ -5,7 +5,7 @@
 [![GitHub Issues](https://img.shields.io/github/issues/GokhmanLabOrganization/MPRA_QC_analysis)](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/issues)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/GokhmanLabOrganization/MPRA_QC_analysis)](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/pulls)
 
-# 🧬 MPRA Analysis Pipeline
+# 🧬 MPRA QC Analysis Pipeline
 
 This repository contains a reproducible pipeline for analyzing **Massively Parallel Reporter Assay (MPRA)** data. It's core is a python package that generates quality control plots of MPRA datasets. The package is integrated in a [Snakemake](https://snakemake.github.io/) pipeline that allows you to run the entire analysis with a single command.
 
@@ -14,7 +14,7 @@ This repository contains a reproducible pipeline for analyzing **Massively Paral
 ## 🚀 Overview
 The pipeline allows you to:
 - Preprocess and quality-check MPRA data.  
-- Perform statistical analysis of variant activity.  
+- Perform statistical QC analysis of variant activity.  
 - Generate plots and summary tables for downstream interpretation.
 - Directly use MPRAsnakeflow outputs to generated required inputs for the pipeline and use directly for the QC plots.
 
