@@ -7,7 +7,7 @@
 
 # 🧬 MPRA QC Analysis Pipeline
 
-This repository contains a reproducible pipeline for analyzing **Massively Parallel Reporter Assay (MPRA)** data. It's core is a python package that generates quality control plots of MPRA datasets. The package is integrated in a [Snakemake](https://snakemake.github.io/) pipeline that allows you to run the entire analysis with a single command.
+This repository contains a reproducible pipeline for quality-control analysis of **Massively Parallel Reporter Assay (MPRA)** data. At its core are Python scripts that generate QC plots for MPRA datasets. These scripts are integrated into a [Snakemake](https://snakemake.github.io/) workflow, allowing the full analysis to be run with a single command.
 
 ---
 
