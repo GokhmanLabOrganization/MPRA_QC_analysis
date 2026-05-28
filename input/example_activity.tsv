@@ -1,5 +1,5 @@
 file	path
-cCRE_fasta	/home/labs/davidgo/simonf/backup/MPRA_QC/MPRA_QC_analysis/sample_inputs_v4/oligo_fasta3.fasta
+cCRE_fasta	//path//to//files///oligo_fasta3.fasta
 activity_df	//path//to//files///activity_df.csv
 activity_per_rep	//path//to//files///activity_per_rep.csv
 std_analysis_df	//path//to//files///std_analysis_df.csv
