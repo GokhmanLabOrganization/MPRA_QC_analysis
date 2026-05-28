@@ -113,7 +113,7 @@ snakemake --cores <number_of_cores>
 
 Create a configuration file that includes the paths for all the files that are required for running the pipeline, an example for such file is located in the input folder. We divide the analysis into activity and associations. The activity analysis requires a file with the activity data, while the association analysis requires a file with the association data. The configuration file should include the paths for these files, as well as the paths for the output directories.
 
-Example data files can be found on [Zenodo record 20106439](https://doi.org/10.5281/zenodo.20106439). You can download the files and use them as input for the pipeline to test the pipeline.
+Example data files can be found on [Zenodo record 20106439](https://doi.org/10.5281/zenodo.20427121). You can download the files and use them as input for the pipeline to test the pipeline.
 
 ### Running the pipeline
 
