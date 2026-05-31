@@ -1099,7 +1099,7 @@ def bc_retention_by_dna_rna_sequencing_depth_plot(reps_sampling_df_bc: pd.DataFr
 
     ax.legend(
         handles=[hill_proxy, RNA_proxy, DNA_proxy],
-        labels=["Model prediction", "RNA", "DNA"],
+        labels=["Hill Model prediction", "RNA", "DNA"],
         frameon=False,
         loc="center right",
     )
