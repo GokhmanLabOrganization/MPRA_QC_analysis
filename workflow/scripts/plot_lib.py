@@ -944,7 +944,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         label="cCRE count",
     )
 
-    ax2.set_ylabel("Number of cCREs")
+    ax2.set_ylabel("Unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -952,7 +952,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     ax_hist.spines["right"].set_visible(True)
 
     ax_hist.set_xlabel("%GC")
-    ax_hist.set_ylabel("DNA reads")
+    ax_hist.set_ylabel("DNA reads per cCRE")
     ax_hist.set_xlim(0, 100)
     ax_hist.set_xticks([0, 100])
     ax_hist.set_xticklabels(["0", "100"])
