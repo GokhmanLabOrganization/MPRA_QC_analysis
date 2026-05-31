@@ -196,7 +196,7 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     )
     ax_hist.set_xticks([bin_edges[0], bin_edges[-1]])
     ax_hist.set_xlabel("GC content")
-    ax_hist.set_ylabel("Number of reads per cCRE")
+    ax_hist.set_ylabel("Reads per cCRE")
     ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
     ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
@@ -208,7 +208,7 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         marker="o",
         label="cCRE count",
     )
-    ax2.set_ylabel("Number of unique cCREs")
+    ax2.set_ylabel("Unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -228,7 +228,7 @@ def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Ax
         final_counts_df.groupby("g_stretch")["association_count"].agg(count="count", median="median").reindex(xs).reset_index()
     )
     bp = ax_hist.boxplot(data, positions=xs, widths=0.7, showfliers=False, patch_artist=True)
-    ax_hist.set_ylabel("Reads per oligo")
+    ax_hist.set_ylabel("Reads per cCRE")
     ax_hist.set_xlabel("G stretch")
     for box in bp["boxes"]:
         box.set_facecolor(plot_color_pallete["read"])
@@ -244,10 +244,10 @@ def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Ax
         g_stretch_summary["count"],
         color=plot_color_pallete["cCRE"],
         marker="o",
-        label="Number of cCREs",
+        label="Unique cCREs",
     )
 
-    ax2.set_ylabel("Number of cCREs")
+    ax2.set_ylabel("Unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -944,7 +944,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         label="cCRE count",
     )
 
-    ax2.set_ylabel("Number of cCREs")
+    ax2.set_ylabel("Unique cCREs")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
@@ -952,7 +952,7 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     ax_hist.spines["right"].set_visible(True)
 
     ax_hist.set_xlabel("%GC")
-    ax_hist.set_ylabel("DNA reads")
+    ax_hist.set_ylabel("DNA reads per cCRE")
     ax_hist.set_xlim(0, 100)
     ax_hist.set_xticks([0, 100])
     ax_hist.set_xticklabels(["0", "100"])
