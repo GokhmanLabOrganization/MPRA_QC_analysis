@@ -113,7 +113,8 @@ snakemake --cores <number_of_cores>
 
 Create a configuration file that includes the paths for all the files that are required for running the pipeline, an example for such file is located in the input folder. We divide the analysis into activity and associations. The activity analysis requires a file with the activity data, while the association analysis requires a file with the association data. The configuration file should include the paths for these files, as well as the paths for the output directories.
 
-Example data files can be found on [Zenodo record 20472656](https://doi.org/10.5281/zenodo.19091350). You can download the files and use them as input for the pipeline to test the pipeline.
+Example data files can be found on [Zenodo record 20472656](https://doi.org/10.5281/zenodo.19091350). You can download the files and use them as test inputs for the pipeline. 
+Example configuration files are included as well (change the input file paths within the configs).
 
 ### Running the pipeline
 
@@ -133,7 +134,7 @@ snakemake --cores <number_of_cores> \
 --config association=<path_to_association_file>
 ```
 
-**NOTE:** If you need a different file path than your work folder you have to add them to apptainer using the snakemake command  `--apptainer-args "-B /your/new/path1 -B /your/new/path2"`
+**NOTE:** The snakemake command should be run from the MPRA_QC_analysis folder. If you need a different file path than your work folder you have to add them to apptainer using the snakemake command  `--apptainer-args "-B /your/new/path1 -B /your/new/path2"`
 
 You can run both analyses together by including both paths in the configuration file:
 
