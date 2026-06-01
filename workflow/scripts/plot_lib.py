@@ -162,18 +162,29 @@ def cCREs_per_BC_plot(promiscuity_counts_df: pd.DataFrame) -> tuple[Figure, Axes
 def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     bins = [float(x) for x in np.arange(0, 1.01, 0.05)]
     gc_bins = pd.cut(final_counts_df["gc"], bins=bins, duplicates="drop")
+
+    final_counts_df = final_counts_df.copy()
     final_counts_df["gc_bin"] = gc_bins
-    bin_sizes = final_counts_df.reset_index().groupby("gc_bin")["index"].nunique()
+
+    bin_sizes = final_counts_df.reset_index().groupby("gc_bin",observed=True)["index"].nunique()
     bin_df = pd.DataFrame(data={"gc_bin": bin_sizes.index, "bin_size": bin_sizes.values})
 
-    bin_df["gc_bin_center"] = bin_df["gc_bin"].apply(lambda x: (float(x.left) + float(x.right)))
+    bin_df["gc_bin_center"] = bin_df["gc_bin"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
     bin_intervals = bin_df["gc_bin"].cat.categories
     bin_edges = [i.left for i in bin_intervals] + [bin_intervals[-1].right]
 
     boxplot_df = final_counts_df.copy()
-    boxplot_df["gc_bin_center"] = boxplot_df["gc_bin"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
+    boxplot_df["gc_bin_center"] = boxplot_df["gc_bin"].apply(
+        lambda x: (float(x.left) + float(x.right)) / 2
+    )
 
-    boxplot_groups = boxplot_df.groupby("gc_bin_center", observed=True)["association_count"].apply(list)
+    # Calculate log2 reads per cCRE
+    boxplot_df["association_count_log2"] = np.log2(boxplot_df["association_count"]+1)
+
+    boxplot_groups = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["association_count_log2"]
+        .apply(list)
+    )
 
     gc_summary = (
         boxplot_df.groupby("gc_bin_center", observed=True)["association_count"]
@@ -181,10 +192,17 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         .reset_index()
     )
 
-    bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
+    # Calculate log2 unique cCREs
+    gc_summary["count_log2"] = np.log2(gc_summary["count"]+1)
+
+    bin_width_dict = {
+        (i.left + i.right) / 2: (i.right - i.left) / 2
+        for i in bin_intervals
+    }
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
     fig, ax_hist = plt.subplots()
+
     ax_hist.boxplot(
         x=list(boxplot_groups.values),
         positions=boxplot_groups.index,
@@ -194,26 +212,30 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         boxprops=dict(facecolor=plot_color_pallete["read"]),
         medianprops=dict(color="black", linewidth=1),
     )
+
     ax_hist.set_xticks([bin_edges[0], bin_edges[-1]])
-    ax_hist.set_xlabel("GC content")
-    ax_hist.set_ylabel("Reads per cCRE")
-    ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
+    ax_hist.set_xlabel("GC content (%)")
+    ax_hist.set_ylabel("log2(reads per cCRE)")
     ax_hist.set_xlim(bin_edges[0], bin_edges[-1])
     ax_hist.xaxis.set_major_formatter(ticker.PercentFormatter(xmax=1))
+
     ax2 = ax_hist.twinx()
     ax2.plot(
         gc_summary["gc_bin_center"],
-        gc_summary["count"],
+        gc_summary["count_log2"],
         color=plot_color_pallete["cCRE"],
         marker="o",
         label="cCRE count",
     )
-    ax2.set_ylabel("Unique cCREs")
+
+    ax2.set_ylabel("Unique cCREs, log2")
+
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
     ax2.tick_params(axis="y", colors=plot_color_pallete["cCRE"])
     ax_hist.spines["right"].set_visible(True)
+
     fig.set_size_inches(8, 8)
 
     return fig, ax_hist
@@ -222,13 +244,15 @@ def PCR_bias_GC_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     fig, ax_hist = plt.subplots()
     xs = np.sort(final_counts_df["g_stretch"].unique())
-    data = [np.asarray(final_counts_df.loc[final_counts_df["g_stretch"] == x, "association_count"]) for x in xs]
-
+    data = [
+        np.log2(np.asarray(final_counts_df.loc[final_counts_df["g_stretch"] == x, "association_count"])+1)
+        for x in xs
+    ]
     g_stretch_summary = (
         final_counts_df.groupby("g_stretch")["association_count"].agg(count="count", median="median").reindex(xs).reset_index()
     )
     bp = ax_hist.boxplot(data, positions=xs, widths=0.7, showfliers=False, patch_artist=True)
-    ax_hist.set_ylabel("Reads per cCRE")
+    ax_hist.set_ylabel("log2(reads per cCRE)")
     ax_hist.set_xlabel("G stretch")
     for box in bp["boxes"]:
         box.set_facecolor(plot_color_pallete["read"])
@@ -236,23 +260,29 @@ def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Ax
         for item in bp[part]:
             item.set_color("gray")
 
-    ax_hist.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
+    ax_hist.yaxis.set_major_formatter(
+    ticker.FuncFormatter(lambda x, _: f"{int(x):,}" if x >= 1 else f"{x:g}")
+    )
 
     ax2 = ax_hist.twinx()
     ax2.plot(
         g_stretch_summary["g_stretch"],
-        g_stretch_summary["count"],
+        np.log2(g_stretch_summary["count"]+1),
         color=plot_color_pallete["cCRE"],
         marker="o",
         label="Unique cCREs",
     )
-
-    ax2.set_ylabel("Unique cCREs")
+    ax2.set_ylabel("Unique cCREs, log2")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
+    ax2.set_yscale("log", base=2)
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
     ax2.tick_params(axis="y", colors=plot_color_pallete["cCRE"])
     ax_hist.spines["right"].set_visible(True)
+    ax2.yaxis.set_major_formatter(
+    ticker.FuncFormatter(lambda x, _: f"{int(x):,}" if x >= 1 else f"{x:g}")
+    )
+    
     fig.set_size_inches(8, 8)
 
     return fig, ax_hist
@@ -903,7 +933,7 @@ def replicability_by_activity_plot(
 
 
 def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    bin_sizes = final_counts_df.reset_index().groupby("GC_Content_label")["index"].nunique()
+    bin_sizes = final_counts_df.reset_index().groupby("GC_Content_label",observed=True)["index"].nunique()
     bin_df = pd.DataFrame(data={"GC_Content_label": bin_sizes.index, "bin_size": bin_sizes.values})
 
     bin_intervals = bin_df["GC_Content_label"].cat.categories
@@ -911,18 +941,35 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
 
     boxplot_df = final_counts_df.copy()
     boxplot_df = boxplot_df.dropna(subset=["GC_Content_label", "DNA_rep_comb"])
-    boxplot_df["gc_bin_center"] = boxplot_df["GC_Content_label"].apply(lambda x: (float(x.left) + float(x.right)) / 2)
-
-    boxplot_groups = boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"].apply(list)
-
-    gc_summary = (
-        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"].agg(count="size", median="median").reset_index()
+    boxplot_df["gc_bin_center"] = boxplot_df["GC_Content_label"].apply(
+        lambda x: (float(x.left) + float(x.right)) / 2
     )
 
-    bin_width_dict = {(i.left + i.right) / 2: (i.right - i.left) / 2 for i in bin_intervals}
+    # Calculate log2 DNA reads per cCRE
+    boxplot_df["DNA_rep_comb_log2"] = np.log2(boxplot_df["DNA_rep_comb"]+1)
+
+    boxplot_groups = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb_log2"]
+        .apply(list)
+    )
+
+    gc_summary = (
+        boxplot_df.groupby("gc_bin_center", observed=True)["DNA_rep_comb"]
+        .agg(count="size", median="median")
+        .reset_index()
+    )
+
+    # Calculate log2 unique cCREs
+    gc_summary["count_log2"] = np.log2(gc_summary["count"]+1)
+
+    bin_width_dict = {
+        (i.left + i.right) / 2: (i.right - i.left) / 2
+        for i in bin_intervals
+    }
     widths_filtered = [bin_width_dict.get(pos, 0.5) for pos in boxplot_groups.index]
 
     f, ax_hist = plt.subplots()
+
     ax_hist.boxplot(
         x=list(boxplot_groups.values),
         positions=boxplot_groups.index,
@@ -933,29 +980,30 @@ def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
         medianprops=dict(color="black", linewidth=1),
     )
 
-    ax_hist.set_ylabel("Number of reads")
-
     ax2 = ax_hist.twinx()
     ax2.plot(
         gc_summary["gc_bin_center"],
-        gc_summary["count"],
+        gc_summary["count_log2"],
         color=plot_color_pallete["cCRE"],
         marker="o",
         label="cCRE count",
     )
 
-    ax2.set_ylabel("Unique cCREs")
+    ax2.set_ylabel("Unique cCREs, log2")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
+
+    ax_hist.set_xlabel("GC content (%)")
+    ax_hist.set_ylabel("log2(DNA reads per cCRE)")
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
+
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
     ax2.tick_params(axis="y", colors=plot_color_pallete["cCRE"])
     ax_hist.spines["right"].set_visible(True)
 
-    ax_hist.set_xlabel("%GC")
-    ax_hist.set_ylabel("DNA reads per cCRE")
     ax_hist.set_xlim(0, 100)
     ax_hist.set_xticks([0, 100])
     ax_hist.set_xticklabels(["0", "100"])
+
     f.set_size_inches(8, 8)
 
     return f, ax_hist
