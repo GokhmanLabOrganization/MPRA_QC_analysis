@@ -330,7 +330,7 @@ def create_gc_df(act_df: pd.DataFrame, f_file: str) -> pd.DataFrame:
     gc_df = pd.DataFrame({"cCRE": identifiers, "Sequence": sequences, "GC_Content": gc_contents})
 
     merged_gc_activity = act_df.merge(gc_df, on="cCRE", how="left")
-    merged_gc_activity.loc[:, "DNA_rep_comb_log10"] = np.log10(merged_gc_activity["DNA_rep_comb"])
+    merged_gc_activity.loc[:, "DNA_rep_comb_log10"] = np.log10(merged_gc_activity["DNA_rep_comb"]+1)
     merged_gc_activity.loc[:, "DNA_rep_comb_clipped_500"] = merged_gc_activity["DNA_rep_comb"].clip(upper=500, inplace=False)
     merged_gc_activity.loc[:, "GC_Content_clipped_25_60"] = merged_gc_activity["GC_Content"].clip(
         lower=25, upper=60, inplace=False
