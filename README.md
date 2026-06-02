@@ -107,6 +107,8 @@ conda env update -n MPRA_QC_analysis -f environment_minimal.yml
 snakemake --cores <number_of_cores>
 ```
 
+**NOTE:** The command above will only work in combination with a defined config or config file. Please see the next section how to run the workflow.
+
 ## ▶️ Usage
 
 ### Preparing the input files
