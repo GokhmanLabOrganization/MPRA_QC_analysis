@@ -274,7 +274,6 @@ def PCR_bias_G_stretches_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Ax
     )
     ax2.set_ylabel("Unique cCREs, log2")
     ax2.yaxis.label.set_color(plot_color_pallete["cCRE"])
-    ax2.set_yscale("log", base=2)
     ax_hist.yaxis.label.set_color(plot_color_pallete["read"])
     ax_hist.tick_params(axis="y", colors=plot_color_pallete["read"])
     ax2.tick_params(axis="y", colors=plot_color_pallete["cCRE"])
