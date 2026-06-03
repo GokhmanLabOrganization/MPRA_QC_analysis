@@ -275,7 +275,7 @@ Control annotation for each cCRE.
 | Column | Type | Description |
 |---|---|---|
 | `cCRE` | `str` | cCRE identifier |
-| `cCRE type` | `str` | Control type. Allowed values: `positive_ctrl`, `negative_ctrl`, `test_cCRE` |
+| `cCRE_type` | `str` | Control type. Allowed values: `positive_ctrl`, `negative_ctrl`, `test_cCRE` |
 
 ### `reads_by_group`
 
