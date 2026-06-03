@@ -451,7 +451,7 @@ rule activity_retention_by_sequencing_depth:
             },
         ),
     log:
-        "logs/activity/reproducibility_by_sequencing_depth.{project}.log",
+        "logs/activity/retention_by_sequencing_depth.{project}.log",
     conda:
         getCondaEnv("default.yml")
     params:
