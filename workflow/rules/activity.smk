@@ -394,7 +394,7 @@ rule activity_reproducibility_by_sequencing_depth:
             subcategory="Activity",
             labels={
                 "analysis": "Downsampling",
-                "type": "Retention",
+                "type": "Reproducibility",
                 "figure": "Reproducibility by Sequencing Depth",
             },
         ),
