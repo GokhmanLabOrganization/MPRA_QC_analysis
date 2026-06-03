@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.2](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/compare/v0.1.1...v0.1.2) (2026-06-03)
+
+
+### Features
+
+* log2 changes and axes names ([#89](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/issues/89)) ([48e8db4](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/48e8db4fd793bc864ccfeab5ade3c7fd596083a2))
+
+
+### Bug Fixes
+
+* control correlation bug fixed ([#82](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/issues/82)) ([0275243](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/commit/027524372ffda1d394d878c9640b0b69dd3f69b2))
+
 ## [0.1.1](https://github.com/GokhmanLabOrganization/MPRA_QC_analysis/compare/v0.1.0...v0.1.1) (2026-05-19)
 
 
