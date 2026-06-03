@@ -269,6 +269,21 @@ def get_activity_downsampling_plots(activity_df: pd.DataFrame) -> list:
 def get_activity_reproducibility_by_sequencing_depth_plots(
     activity_df: pd.DataFrame,
 ) -> list:
+    if (
+        not activity_df.empty
+        and "downsampling_activity_path" in activity_df["file"].values
+        and "downsampling_ratio_path" in activity_df["file"].values
+    ):
+        return [
+            "Reproducibility_by_sequencing_depth",
+        ]
+    else:
+        return []
+
+
+def get_activity_retention_by_sequencing_depth(
+    activity_df: pd.DataFrame,
+) -> list:
     if not activity_df.empty and "downsampling_ratio_path" in activity_df["file"].values:
         return [
             "BC_retention_by_DNA_RNA_sequencing_depth",
@@ -281,7 +296,7 @@ def get_activity_reproducibility_by_sequencing_depth_plots(
 def get_activity_mimimise_noise_plots(
     activity_df: pd.DataFrame,
 ) -> list:
-    if not activity_df.empty and "different_std_threshold_analysis" in activity_df["file"].values:
+    if not activity_df.empty and "std_analysis_df" in activity_df["file"].values:
         return [
             "Minimizing_noise",
         ]

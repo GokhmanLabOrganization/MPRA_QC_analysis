@@ -10,10 +10,10 @@ rule preprocessing_mprasnakeflow_assignment_associations_before_promiscuity:
     shell:
         """
         (
-            echo "barcode,cCRE,match_count"; 
-            zcat {input.barcodes_incl_other} | egrep -v "\\sother\\sNA" | \
-            cut -f 1,2 | uniq -c | awk -v "OFS=," '{{print $2,$3,$1}}';
-        ) | gzip -c > {output} 2> {log}
+            echo "barcode,cCRE,match_count"
+            zcat {input.barcodes_incl_other} | egrep -v "\\sother\\sNA" \
+                | cut -f 1,2 | uniq -c | awk -v "OFS=," '{{print $2,$3,$1}}'
+        ) | gzip -c >{output} 2>{log}
         """
 
 
@@ -31,7 +31,7 @@ rule preprocessing_mprasnakeflow_assignment_associations_before_minimum_observat
         threshold=config.get("mprasnakeflow", {}).get("assignment", {}).get("fraction", 0.75),
     shell:
         """
-        python {input.script} --input {input.association_before_promiscuity} --output {output} --threshold {params.threshold} > {log} 2>&1
+        python {input.script} --input {input.association_before_promiscuity} --output {output} --threshold {params.threshold} >{log} 2>&1
         """
 
 
@@ -47,9 +47,9 @@ rule preprocessing_mprasnakeflow_assignment_final_associations:
     shell:
         """
         (
-            echo "barcode,cCRE,match_count";
-            zcat {input.assignment} | egrep -v "\\sother\\s" |  egrep -v "\\sambiguous\\s" | cut -f 1,2,4 | tr '\\t' ',' | sed 's|/[^/]*$||';
-        ) | gzip -c > {output} 2> {log}
+            echo "barcode,cCRE,match_count"
+            zcat {input.assignment} | egrep -v "\\sother\\s" | egrep -v "\\sambiguous\\s" | cut -f 1,2,4 | tr '\\t' ',' | sed 's|/[^/]*$||'
+        ) | gzip -c >{output} 2>{log}
         """
 
 
@@ -70,9 +70,9 @@ rule preprocessing_mprasnakeflow_assignment_downsample:
         getCondaEnv("default.yml")
     shell:
         """
-        paths=( {output} );
+        paths=({output})
         python {input.script} --input {input.assignment} \
-        --output-folder $(dirname "${{paths[0]}}") > {log} 2>&1
+            --output-folder $(dirname "${{paths[0]}}") >{log} 2>&1
         """
 
 
@@ -99,16 +99,16 @@ FIXME: Limitation is that oligos cannot have a name ambiguous or other.
         bc_length=config.get("mprasnakeflow", {}).get("assignment", {}).get("bc_length", 15),
     shell:
         """
-        trap "cat {log.err}" ERR;
+        trap "cat {log.err}" ERR
 
         (
-            echo "barcode,cCRE,match_count";
-            zcat  {input.assignment} | \
-            awk -v "OFS=\\t" -F"\\t" '{{if (length($1)=={params.bc_length}){{print $0 }}}}' | \
-            python {input.script} \
-            -m {params.min_support} -f {params.fraction} | \
-            awk -v "OFS=,"  -F"\\t" '{{ print $1,$2 }}';
-        ) | gzip -c > {output.final} 2> {log.err};
+            echo "barcode,cCRE,match_count"
+            zcat {input.assignment} \
+                | awk -v "OFS=\\t" -F"\\t" '{{if (length($1)=={params.bc_length}){{print $0 }}}}' \
+                | python {input.script} \
+                    -m {params.min_support} -f {params.fraction} \
+                | awk -v "OFS=," -F"\\t" '{{ print $1,$2 }}'
+        ) | gzip -c >{output.final} 2>{log.err}
 
         gzip -l {output.final} | awk 'NR==2 {{exit($2==0)}}' || {{ echo "Error: Empty barcode file {output.final}. No barcodes detected!" >> {log.err}; exit 1; }}
         """
@@ -133,6 +133,6 @@ Copy to the final downsample folder. This is necessary to avoid issues with the 
         """
         mkdir -p {output.output_path}
         for i in {input.final}; do
-            cp $i {output.output_path}/$(basename $i);
-        done 2> {log}
+            cp $i {output.output_path}/$(basename $i)
+        done 2>{log}
         """

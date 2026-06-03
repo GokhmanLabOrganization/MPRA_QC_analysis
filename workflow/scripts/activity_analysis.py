@@ -248,7 +248,7 @@ def plot_activity_downsampling(ds_path: str, output_path: str) -> None:
     click.echo("Activity_by_sequencing_depth DONE")
 
 
-def plot_reproducibility_by_sequencing_depth(ds_activity_path, ds_ratio_path, output_path):
+def plot_reproducibility_by_sequencing_depth(ds_activity_path: str, ds_ratio_path: str, output_path: str) -> None:
     rep_corr_by_act = []
     rep_corr_list = []
     downsampling_perc_list = np.arange(0.1, 1.01, 0.1)
@@ -330,7 +330,7 @@ def create_gc_df(act_df: pd.DataFrame, f_file: str) -> pd.DataFrame:
     gc_df = pd.DataFrame({"cCRE": identifiers, "Sequence": sequences, "GC_Content": gc_contents})
 
     merged_gc_activity = act_df.merge(gc_df, on="cCRE", how="left")
-    merged_gc_activity.loc[:, "DNA_rep_comb_log10"] = np.log10(merged_gc_activity["DNA_rep_comb"])
+    merged_gc_activity.loc[:, "DNA_rep_comb_log10"] = np.log10(merged_gc_activity["DNA_rep_comb"]+1)
     merged_gc_activity.loc[:, "DNA_rep_comb_clipped_500"] = merged_gc_activity["DNA_rep_comb"].clip(upper=500, inplace=False)
     merged_gc_activity.loc[:, "GC_Content_clipped_25_60"] = merged_gc_activity["GC_Content"].clip(
         lower=25, upper=60, inplace=False
@@ -827,7 +827,7 @@ def ratio_correlation_with_controls(activity_per_rep_file: str, controls_file: s
     group_dict = control_df.groupby("cCRE_type")["cCRE"].apply(list).to_dict()
     pos_olg = group_dict["positive_ctrl"] if "positive_ctrl" in group_dict else []
     neg_olg = group_dict["negative_ctrl"] if "negative_ctrl" in group_dict else []
-    plot_ratio_correlation_with_controls(activity_by_rep_df, pos_olg, neg_olg, output_path)
+    plot_ratio_correlation_with_controls(activity_by_rep_df, neg_olg, pos_olg, output_path)
 
 
 @activity.command(help="TODO.")
@@ -870,7 +870,7 @@ def downsampling(downsampling_activity_path: str, output_path: str) -> None:
     type=click.Path(exists=True, dir_okay=True, writable=True),
     help="Path to the output directory for MPRA QC analysis results.",
 )
-def reproducibility_by_sequencing_depth(downsampling_ratio_path: str, output_path: str) -> None:
+def retention_by_sequencing_depth(downsampling_ratio_path: str, output_path: str) -> None:
     """
     TODO
 
@@ -886,6 +886,42 @@ def reproducibility_by_sequencing_depth(downsampling_ratio_path: str, output_pat
         click.echo(f"Error: {e}", err=True)
         raise
 
+@activity.command(help="TODO.")
+@click.option(
+    "--downsampling-activity-path",
+    "downsampling_activity_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
+    help="Path to the downsampling activity data.",
+)
+@click.option(
+    "--downsampling-ratio-path",
+    "downsampling_ratio_path",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True),
+    help="Path to the downsampling ratio data.",
+)
+@click.option(
+    "--output-path",
+    "output_path",
+    required=True,
+    type=click.Path(exists=True, dir_okay=True, writable=True),
+    help="Path to the output directory for MPRA QC analysis results.",
+)
+def reproducibility_by_sequencing_depth(downsampling_activity_path: str, downsampling_ratio_path: str, output_path: str) -> None:
+    """
+    TODO
+
+    Args:
+        downsampling_activity_path (str): Path to the downsampling activity data.
+        downsampling_ratio_path (str): Path to the downsampling ratio data.
+        output_path (str): Path to the output directory for MPRA QC analysis results.
+    """
+    try:
+        plot_reproducibility_by_sequencing_depth(downsampling_activity_path, downsampling_ratio_path, output_path)
+    except FileNotFoundError as e:
+        click.echo(f"Error: {e}", err=True)
+        raise
 
 @activity.command(help="TODO.")
 @click.option(
