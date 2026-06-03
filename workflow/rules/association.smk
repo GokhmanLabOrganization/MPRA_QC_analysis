@@ -69,7 +69,7 @@ rule association_final:
         outdir=directory("results/{project}/association/"),
     shell:
         """
-         python {input.script}  association final --design {input.design} --associations {input.associations} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} association final --design {input.design} --associations {input.associations} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -112,7 +112,7 @@ rule association_before_minimum_observations:
         design=lambda wc, input: f"--design {input.design[0]}" if input.design else "",
     shell:
         """
-         python {input.script} association before-minimum-observations --associations {input.associations} {params.design} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} association before-minimum-observations --associations {input.associations} {params.design} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -155,7 +155,7 @@ rule association_before_promiscuity:
         design=lambda wc, input: f"--design {input.design[0]}" if input.design else "",
     shell:
         """
-         python {input.script}  association before-promiscuity --associations {input.associations} {params.design} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} association before-promiscuity --associations {input.associations} {params.design} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -208,5 +208,5 @@ rule association_downsampling:
         outdir=directory("results/{project}/association/"),
     shell:
         """
-         python {input.script}  association downsampling --design {input.design} --downsampling-path {input.downsampling_path} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} association downsampling --design {input.design} --downsampling-path {input.downsampling_path} --output-path {params.outdir} >{log} 2>&1
         """

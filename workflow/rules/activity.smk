@@ -80,7 +80,7 @@ rule activity_main:
     shell:
         """
         python {input.script} activity main \
-        --activity {input.activity} --output-path {params.outdir} > {log} 2>&1
+            --activity {input.activity} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -126,7 +126,7 @@ rule activity_control_boxplots:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity control-boxplots --activity {input.activity} --controls {input.controls} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity control-boxplots --activity {input.activity} --controls {input.controls} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -172,7 +172,7 @@ rule activity_replicability_by_activity:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity replicability-by-activity --activity {input.activity} --activity-per-rep {input.activity_per_rep} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity replicability-by-activity --activity {input.activity} --activity-per-rep {input.activity_per_rep} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -218,7 +218,7 @@ rule activity_gc_content_bias:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity gc-content-bias --activity {input.activity} --design {input.design} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity gc-content-bias --activity {input.activity} --design {input.design} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -273,7 +273,7 @@ rule activity_ratio_correlation_between_replicates:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity ratio-correlation-between-replicates --activity-per-rep {input.activity_per_rep} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity ratio-correlation-between-replicates --activity-per-rep {input.activity_per_rep} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -319,7 +319,7 @@ rule activity_ratio_correlation_with_controls:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity ratio-correlation-with-controls --activity-per-rep {input.activity_per_rep} --controls {input.controls} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity ratio-correlation-with-controls --activity-per-rep {input.activity_per_rep} --controls {input.controls} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -360,7 +360,7 @@ rule activity_downsampling:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity downsampling --downsampling-activity-path {input.downsampling_activity_path} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity downsampling --downsampling-activity-path {input.downsampling_activity_path} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -406,7 +406,7 @@ rule activity_reproducibility_by_sequencing_depth:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity reproducibility-by-sequencing-depth --downsampling-activity-path {input.downsampling_activity_path} --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity reproducibility-by-sequencing-depth --downsampling-activity-path {input.downsampling_activity_path} --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -458,7 +458,7 @@ rule activity_retention_by_sequencing_depth:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity retention-by-sequencing-depth --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity retention-by-sequencing-depth --downsampling-ratio-path {input.downsampling_ratio_path} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -499,7 +499,7 @@ rule activity_mimimise_noise:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity mimimise-noise --sdt-thresholds {input.sdt_thresholds} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity mimimise-noise --sdt-thresholds {input.sdt_thresholds} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -540,7 +540,7 @@ rule activity_genomic_annotations:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity genomic-annotations --genomic-annotations {input.genomic_annotations} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity genomic-annotations --genomic-annotations {input.genomic_annotations} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -581,7 +581,7 @@ rule activity_tss_proximity:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity tss-proximity --tss-distance {input.tss_distance} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity tss-proximity --tss-distance {input.tss_distance} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -625,7 +625,7 @@ rule activity_prediction_vs_activity:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-         python {input.script} activity prediction-vs-activity --activity-prediction {input.activity_prediction} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity prediction-vs-activity --activity-prediction {input.activity_prediction} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -670,7 +670,7 @@ rule activity_prediction_vs_differential_activity:
     shell:
         """
         python {input.script} activity prediction-vs-differential-activity \
-        --differential-activity-prediction {input.differential_activity_prediction} --output-path {params.outdir} > {log} 2>&1
+            --differential-activity-prediction {input.differential_activity_prediction} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -726,7 +726,7 @@ rule activity_comparative:
     shell:
         """
         python {input.script} activity comparative \
-        --differential-activity {input.differential_activity} --output-path {params.outdir} > {log} 2>&1
+            --differential-activity {input.differential_activity} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -771,7 +771,7 @@ rule activity_allelic_pairs:
     shell:
         """
         python {input.script} activity allelic-pairs \
-        --allelic-pairs {input.allelic_pairs} --output-path {params.outdir} > {log} 2>&1
+            --allelic-pairs {input.allelic_pairs} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -815,7 +815,7 @@ rule activity_cell_types:
         outdir=directory("results/{project}/activity/"),
     shell:
         """
-        python {input.script} activity cell-types --cell-types {input.cell_types} --output-path {params.outdir} > {log} 2>&1
+        python {input.script} activity cell-types --cell-types {input.cell_types} --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -860,8 +860,8 @@ rule activity_comparative_replicates:
     shell:
         """
         python {input.script} activity comparative-replicates \
-        --differential-activity-replicates {input.differential_activity_replicates} \
-        --output-path {params.outdir} > {log} 2>&1
+            --differential-activity-replicates {input.differential_activity_replicates} \
+            --output-path {params.outdir} >{log} 2>&1
         """
 
 
@@ -908,6 +908,6 @@ rule activity_sample_clusters:
     shell:
         """
         python {input.script} activity sample-clusters \
-        --reads-by-group {input.reads_by_group} --sample-metadata {input.sample_metadata} \
-        --output-path {params.outdir} > {log} 2>&1
+            --reads-by-group {input.reads_by_group} --sample-metadata {input.sample_metadata} \
+            --output-path {params.outdir} >{log} 2>&1
         """

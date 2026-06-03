@@ -54,10 +54,10 @@ rule preprocessing_mprasnakeflow_experiment_bcalm_elements:
     shell:
         """
         Rscript {input.script} --counts {input.reporter_experiment_barcode} \
-        --labels {input.labels} --test-label {params.test_label} --control-label {params.control_label} \
-        --percentile {params.percentile} --normalize {params.normalize} \
-        --output-mean-variance-relation-plot {output.output_mean_variance_relation} --output-volcano-plot {output.output_volcano_plot} --output-density-plot {output.output_density_plot} \
-        --output {output.bcalm_result} > {log} 2>&1
+            --labels {input.labels} --test-label {params.test_label} --control-label {params.control_label} \
+            --percentile {params.percentile} --normalize {params.normalize} \
+            --output-mean-variance-relation-plot {output.output_mean_variance_relation} --output-volcano-plot {output.output_volcano_plot} --output-density-plot {output.output_density_plot} \
+            --output {output.bcalm_result} >{log} 2>&1
         """
 
 
@@ -81,8 +81,8 @@ rule preprocessing_mprasnakeflow_experiment_activity_df:
     shell:
         """
         python {input.script} \
-        --reporter-experiment-barcode {input.reporter_experiment_barcode} --bcalm-statistics {input.bcalm_result} \
-        --output {output.activity_df} --fdr {params.fdr} > {log} 2>&1
+            --reporter-experiment-barcode {input.reporter_experiment_barcode} --bcalm-statistics {input.bcalm_result} \
+            --output {output.activity_df} --fdr {params.fdr} >{log} 2>&1
         """
 
 
@@ -103,8 +103,8 @@ rule preprocessing_mprasnakeflow_experiment_activity_per_rep:
     shell:
         """
         python {input.script} \
-        --reporter-experiment-barcode {input.reporter_experiment_barcode} \
-        --output {output.activity_per_rep_df} > {log} 2>&1
+            --reporter-experiment-barcode {input.reporter_experiment_barcode} \
+            --output {output.activity_per_rep_df} >{log} 2>&1
         """
 
 
@@ -150,9 +150,9 @@ rule preprocessing_mprasnakeflow_experiment_bcalm_comparative:
     shell:
         """
         Rscript {input.script} --counts {input.reporter_experiment_barcode} \
-        --comparative-map {input.comparative_map} --normalize {params.normalize} \
-        --output-mean-variance-relation-plot {output.output_mean_variance_relation} --output-volcano-plot {output.output_volcano_plot} \
-        --output {output.bcalm_result} > {log} 2>&1
+            --comparative-map {input.comparative_map} --normalize {params.normalize} \
+            --output-mean-variance-relation-plot {output.output_mean_variance_relation} --output-volcano-plot {output.output_volcano_plot} \
+            --output {output.bcalm_result} >{log} 2>&1
         """
 
 
@@ -174,8 +174,8 @@ rule preprocessing_mprasnakeflow_experiment_comparative_df:
     shell:
         """
         python {input.script} \
-        --bcalm-statistics {input.bcalm_result} --comparative-map {input.comparative_map} \
-        --output {output.comparative_df} --fdr {params.fdr} > {log} 2>&1
+            --bcalm-statistics {input.bcalm_result} --comparative-map {input.comparative_map} \
+            --output {output.comparative_df} --fdr {params.fdr} >{log} 2>&1
         """
 
 
@@ -197,8 +197,8 @@ rule preprocessing_mprasnakeflow_experiment_allelic_pairs_df:
     shell:
         """
         python {input.script} \
-        --reporter-experiment-barcode {input.reporter_experiment_barcode} --comparative-map {input.comparative_map} \
-        --output {output.allelic_pairs_df} > {log} 2>&1
+            --reporter-experiment-barcode {input.reporter_experiment_barcode} --comparative-map {input.comparative_map} \
+            --output {output.allelic_pairs_df} >{log} 2>&1
         """
 
 
@@ -220,8 +220,8 @@ rule preprocessing_mprasnakeflow_experiment_allelic_pairs_replicates_df:
     shell:
         """
         python {input.script} \
-        --reporter-experiment-barcode {input.reporter_experiment_barcode} --comparative-map {input.comparative_map} \
-        --output {output.allelic_pairs_replicates_df} > {log} 2>&1
+            --reporter-experiment-barcode {input.reporter_experiment_barcode} --comparative-map {input.comparative_map} \
+            --output {output.allelic_pairs_replicates_df} >{log} 2>&1
         """
 
 
@@ -246,8 +246,8 @@ rule preprocessing_mprasnakeflow_experiment_downsampling:
         "docker://quay.io/biocontainers/mpralib:0.10.3--pyhdfd78af_0"
     shell:
         """
-        paths=( {output} );
-        python {input.script} --reporter-experiment-barcode {input.reporter_experiment_barcode} --output-folder $(dirname "${{paths[0]}}") > {log} 2>&1
+        paths=({output})
+        python {input.script} --reporter-experiment-barcode {input.reporter_experiment_barcode} --output-folder $(dirname "${{paths[0]}}") >{log} 2>&1
         """
 
 
@@ -269,7 +269,7 @@ rule preprocessing_mprasnakeflow_experiment_downsampling_ratio_df:
         "docker://quay.io/biocontainers/mpralib:0.10.3--pyhdfd78af_0"
     shell:
         """
-        python {input.script} --reporter-experiment-barcode {input.reporter_experiment_barcode} --output {output} > {log} 2>&1
+        python {input.script} --reporter-experiment-barcode {input.reporter_experiment_barcode} --output {output} >{log} 2>&1
         """
 
 
@@ -292,8 +292,8 @@ Copy to the final downsample folder. This is necessary to avoid issues with the 
         """
         mkdir -p {output.output_path}
         for i in {input.final}; do
-            cp $i {output.output_path}/$(basename $i);
-        done 2> {log}
+            cp $i {output.output_path}/$(basename $i)
+        done 2>{log}
         """
 
 
@@ -318,9 +318,9 @@ rule preprocessing_mprasnakeflow_experiment_downsampling_bcalm:
     shell:
         """
         Rscript {input.script} --counts {input.reporter_experiment_barcode} \
-        --labels {input.labels} --test-label {params.test_label} --control-label {params.control_label} \
-        --percentile {params.percentile} --normalize {params.normalize} \
-        --output {output.bcalm_result} > {log} 2>&1
+            --labels {input.labels} --test-label {params.test_label} --control-label {params.control_label} \
+            --percentile {params.percentile} --normalize {params.normalize} \
+            --output {output.bcalm_result} >{log} 2>&1
         """
 
 
@@ -350,8 +350,8 @@ rule preprocessing_mprasnakeflow_experiment_downsample_activity_df:
     shell:
         """
         python {input.script} \
-        --reporter-experiment-barcode {input.reporter_experiment_barcode} --bcalm-statistics {input.bcalm_result} \
-        --output {output.activity_df} --fdr {params.fdr} > {log} 2>&1
+            --reporter-experiment-barcode {input.reporter_experiment_barcode} --bcalm-statistics {input.bcalm_result} \
+            --output {output.activity_df} --fdr {params.fdr} >{log} 2>&1
         """
 
 
@@ -374,6 +374,6 @@ Copy to the final downsample folder. This is necessary to avoid issues with the 
         """
         mkdir -p {output.output_path}
         for i in {input.final}; do
-            cp $i {output.output_path}/$(basename $i);
-        done 2> {log}
+            cp $i {output.output_path}/$(basename $i)
+        done 2>{log}
         """
