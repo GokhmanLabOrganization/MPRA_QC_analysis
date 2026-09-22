@@ -847,15 +847,16 @@ def replicability_by_activity_plot(
     df.loc[df["mask"], "bin"] = pd.cut(df.loc[df["mask"], "x"], bins=bins_active_merged, include_lowest=True)
 
     results = []
-    for b, group in df.groupby("bin", observed=False):
-        corr_func = spearmanr
-        r, _ = corr_func(group["x"], group["y"])
+    for (is_active, b), group in df.groupby(["mask", "bin"], observed=False):
+        if pd.isna(b) or len(group) < 3:
+            continue
+        r, _ = spearmanr(group["x"], group["y"])
         mean_y = np.mean(group["y"])
         std_y = np.std(group["y"], ddof=1)
         cv_y = (std_y / abs(mean_y)) * 100 if mean_y != 0 else np.nan
-        mid = b.mid if pd.notna(b) else np.nan
-        active_flag = group["mask"].iloc[0]
-        results.append({"bin": str(b), "mid_x": mid, "corr": r, "cv": cv_y, "n": len(group), "activity_flag": active_flag})
+        results.append(
+            {"bin": str(b), "mid_x": b.mid, "corr": r, "cv": cv_y, "n": len(group), "activity_flag": is_active}
+        )
 
     corr_df = pd.DataFrame(results).sort_values("mid_x")
     n_max = corr_df["n"].max()
@@ -896,12 +897,10 @@ def replicability_by_activity_plot(
 
     ax1.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
 
-    ax1.set_ylabel(f"Pearson's correlation (r)")
+    ax1.set_ylabel(f"Spearman's correlation (ρ)")
     ax1.axhline(0, color="gray", linestyle="--", lw=1)
     ax1.set_ylim(-1, 1)
 
-    example_ns = [corr_df["n"].min(), corr_df["n"].max()]
-    example_ns = [int(v) for v in example_ns]
 
     ax1.set_yticks([ax1.get_yticks()[0], ax1.get_yticks()[-1]])
     x_ticks = ax1.get_xticks()
