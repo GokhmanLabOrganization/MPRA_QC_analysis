@@ -749,6 +749,12 @@ def scale(n, n_max):
     return 30 + 200 * np.sqrt(n / n_max)
 
 
+def _bin_counts(x, edges):
+    """Count points exactly the way pd.cut will later bin them."""
+    cats = pd.cut(x, bins=edges, include_lowest=True)
+    return pd.Series(cats).value_counts(sort=False).reindex(cats.categories, fill_value=0).to_numpy()
+
+
 def merge_edge_bins(x: np.ndarray, edges: np.ndarray, min_count: int) -> Sequence[float]:
     """
     Merge only edge bins (leftmost and rightmost) into their neighbors
@@ -766,30 +772,29 @@ def merge_edge_bins(x: np.ndarray, edges: np.ndarray, min_count: int) -> Sequenc
         return [float(e) for e in edges]
 
     while True:
-        counts, _ = np.histogram(x, bins=edges)
+        counts = _bin_counts(x, edges)        # <-- was np.histogram(x, bins=edges)
         changed = False
 
-        # --- left edge ---
         if len(counts) > 1 and counts[0] < min_count:
-            # merge bin 0 with bin 1: remove the internal boundary edges[1]
             edges = np.delete(edges, 1)
             changed = True
 
-        # recompute if we just changed edges
-        counts, _ = np.histogram(x, bins=edges)
+        counts = _bin_counts(x, edges)        # <-- was np.histogram(x, bins=edges)
 
-        # --- right edge ---
         if len(counts) > 1 and counts[-1] < min_count:
-            # merge last bin with previous: remove internal boundary edges[-2]
             edges = np.delete(edges, -2)
             changed = True
 
-        # stop when no more merges are needed / possible
         if not changed or edges.size <= 2:
             break
 
     return [float(e) for e in edges]
 
+def _integer_edges(v):
+    lo, hi = np.floor(np.nanmin(v)), np.ceil(np.nanmax(v))
+    if hi - lo < 1:          # guarantee at least one bin
+        hi = lo + 1
+    return np.arange(lo, hi + 1.0, 1.0)
 
 def replicability_by_activity_plot(
     activity_by_rep: pd.DataFrame, act_df: pd.DataFrame, compare_rep1: str | None = None, compare_rep2: str | None = None
@@ -829,10 +834,8 @@ def replicability_by_activity_plot(
     max_non_active = np.nanmax(df.loc[~df["mask"], "x"])
     min_active = df.loc[df["mask"], "x"].min()
     max_active = df.loc[df["mask"], "x"].max()
-    bins_non_active = np.linspace(
-        np.floor(min_non_active), np.ceil(max_non_active), int((np.ceil(max_non_active)) - np.floor(min_non_active) + 1)
-    )
-    bins_active = np.linspace(np.floor(min_active), np.ceil(max_active), int((np.ceil(max_active)) - np.floor(min_active) + 1))
+    bins_non_active = _integer_edges(df.loc[~df["mask"], "x"])
+    bins_active     = _integer_edges(df.loc[df["mask"], "x"])
 
     n_min = 30  # or whatever you decide
 
@@ -840,12 +843,17 @@ def replicability_by_activity_plot(
     x_non = np.asarray(df.loc[~df["mask"], "x"].values)
     bins_non_active_merged = merge_edge_bins(x_non, bins_non_active, n_min)
     df.loc[~df["mask"], "bin"] = pd.cut(df.loc[~df["mask"], "x"], bins=bins_non_active_merged, include_lowest=True)
+    lost = df["bin"].isna().sum()
+    
 
     # active
     x_act = np.asarray(df.loc[df["mask"], "x"].values)
     bins_active_merged = merge_edge_bins(x_act, bins_active, n_min)
     df.loc[df["mask"], "bin"] = pd.cut(df.loc[df["mask"], "x"], bins=bins_active_merged, include_lowest=True)
 
+    if lost:
+        raise ValueError(f"{lost} oligos fell outside all bins and would be dropped silently")
+    
     results = []
     for (is_active, b), group in df.groupby(["mask", "bin"], observed=False):
         if pd.isna(b) or len(group) < 3:
@@ -854,9 +862,15 @@ def replicability_by_activity_plot(
         mean_y = np.mean(group["y"])
         std_y = np.std(group["y"], ddof=1)
         cv_y = (std_y / abs(mean_y)) * 100 if mean_y != 0 else np.nan
-        results.append(
-            {"bin": str(b), "mid_x": b.mid, "corr": r, "cv": cv_y, "n": len(group), "activity_flag": is_active}
-        )
+        results.append({
+            "bin": str(b), 
+            "mid_x": group["x"].median(),        # change 2, from the summary
+            "corr": r,
+            "cv": cv_y,
+            "n": len(group),
+            "activity_flag": is_active,
+            "reliable": len(group) >= n_min,     # same threshold the binning uses
+            })
 
     corr_df = pd.DataFrame(results).sort_values("mid_x")
     n_max = corr_df["n"].max()
@@ -865,35 +879,18 @@ def replicability_by_activity_plot(
 
     fig, ax1 = plt.subplots()
 
-    ax1.plot(
-        corr_df.loc[corr_df["activity_flag"], "mid_x"], corr_df.loc[corr_df["activity_flag"], "corr"], "-", lw=2, color="red"
-    )
-    ax1.scatter(
-        corr_df.loc[corr_df["activity_flag"], "mid_x"],
-        corr_df.loc[corr_df["activity_flag"], "corr"],
-        s=sizes_act,
-        color="red",
-        edgecolor="black",
-        alpha=0.8,
-        zorder=3,
-    )
+    for flag, color in ((True, "red"), (False, "gray")):
+        sub = corr_df[corr_df["activity_flag"] == flag].copy()
 
-    ax1.plot(
-        corr_df.loc[~corr_df["activity_flag"], "mid_x"],
-        corr_df.loc[~corr_df["activity_flag"], "corr"],
-        "-",
-        lw=2,
-        color="gray",
-    )
-    ax1.scatter(
-        corr_df.loc[~corr_df["activity_flag"], "mid_x"],
-        corr_df.loc[~corr_df["activity_flag"], "corr"],
-        s=sizes_non_act,
-        color="gray",
-        edgecolor="black",
-        alpha=0.8,
-        zorder=3,
-    )
+        # line: break it at unreliable bins rather than bridging them
+        sub["line_corr"] = sub["corr"].where(sub["reliable"])
+        ax1.plot(sub["mid_x"], sub["line_corr"], "-", lw=2, color=color)
+
+        solid, faint = sub[sub["reliable"]], sub[~sub["reliable"]]
+        ax1.scatter(solid["mid_x"], solid["corr"], s=scale(solid["n"], n_max),
+                    color=color, edgecolor="black", alpha=0.8, zorder=3)
+        ax1.scatter(faint["mid_x"], faint["corr"], s=scale(faint["n"], n_max),
+                    facecolors="none", edgecolors=color, alpha=0.6, zorder=3)
 
     ax1.set_xlabel(rf"$\log_{{2}}\!\left(\frac{{\mathrm{{RNA}}}}{{\mathrm{{DNA}}}}\right)$ {compare_rep1}")
 
