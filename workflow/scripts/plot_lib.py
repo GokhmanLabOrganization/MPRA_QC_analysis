@@ -843,7 +843,7 @@ def replicability_by_activity_plot(
     x_non = np.asarray(df.loc[~df["mask"], "x"].values)
     bins_non_active_merged = merge_edge_bins(x_non, bins_non_active, n_min)
     df.loc[~df["mask"], "bin"] = pd.cut(df.loc[~df["mask"], "x"], bins=bins_non_active_merged, include_lowest=True)
-    lost = df["bin"].isna().sum()
+    
     
 
     # active
@@ -851,6 +851,7 @@ def replicability_by_activity_plot(
     bins_active_merged = merge_edge_bins(x_act, bins_active, n_min)
     df.loc[df["mask"], "bin"] = pd.cut(df.loc[df["mask"], "x"], bins=bins_active_merged, include_lowest=True)
 
+    lost = df["bin"].isna().sum()
     if lost:
         raise ValueError(f"{lost} oligos fell outside all bins and would be dropped silently")
     
@@ -925,7 +926,6 @@ def replicability_by_activity_plot(
     fig.tight_layout()
 
     return fig, ax1
-
 
 def gc_content_bias_plot(final_counts_df: pd.DataFrame) -> tuple[Figure, Axes]:
     bin_sizes = final_counts_df.reset_index().groupby("GC_Content_label",observed=True)["index"].nunique()
