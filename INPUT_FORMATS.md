@@ -283,7 +283,6 @@ RNA counts for each cCRE, by sample. All columns must be numeric. One column is 
 
 | Column | Type | Description |
 |---|---|---|
-| `cCRE` | `str` | cCRE identifier |
 | `{sample}` | `int64` | RNA counts in sample `{sample}` |
 
 ### `samples_metadata`
