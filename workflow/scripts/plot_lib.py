@@ -1711,37 +1711,44 @@ def diff_activity_corr_reps_hexbin_plot(
 
 
 def sample_clustering_plot(reads_df: pd.DataFrame, metadata_df: pd.DataFrame) -> tuple[Figure, Axes]:
-    pca_input = reads_df.copy()
-    groups = metadata_df["Group"].values
+    # Accept the documented format (cCRE column) or numeric-only files
+    counts = reads_df.copy()
+    non_numeric = counts.select_dtypes(exclude="number").columns.tolist()
+    if non_numeric:
+        raise ValueError(
+            f"reads_by_group must contain only numeric sample columns; found {non_numeric}. "
+            "Remove identifier columns (see INPUT_FORMATS.md)."
+        )
 
-    # Transpose for PCA (samples = columns in R)
-    X = pca_input.T.values
-    X_scaled = StandardScaler().fit_transform(X)
+    # Drop rows that are zero in every sample (carry no information)
+    counts = counts.loc[counts.sum(axis=1) > 0]
+
+    # Match groups to samples by name, not by row order
+    meta = metadata_df.set_index("Sample")
+    missing = [s for s in counts.columns if s not in meta.index]
+    if missing:
+        raise ValueError(f"samples_metadata is missing samples: {missing}")
+    groups = meta.loc[counts.columns, "Group"].values
+
+    # Normalize for sequencing depth (log2 CPM) before scaling
+    logcpm = np.log2(counts / counts.sum(axis=0) * 1e6 + 1)
+
+    # Samples as rows, features as columns
+    X_scaled = StandardScaler().fit_transform(logcpm.T.values)
 
     pca = PCA()
     pcs = pca.fit_transform(X_scaled)
-
-    # Variance explained
     var_explained = pca.explained_variance_ratio_ * 100  # %
 
-    # Build dataframe for plotting
-    pca_df = pd.DataFrame(pcs, columns=[f"PC{i+1}" for i in range(pcs.shape[1])])
+    pca_df = pd.DataFrame(pcs, columns=[f"PC{i+1}" for i in range(pcs.shape[1])], index=counts.columns)
     pca_df["group"] = groups
 
-    # Plot PC1 vs PC2
     fig, ax = plt.subplots(figsize=(6, 5))
-    ax = sns.scatterplot(data=pca_df, x="PC1", y="PC2", hue="group", style="group", s=80, ax=ax)
+    sns.scatterplot(data=pca_df, x="PC1", y="PC2", hue="group", style="group", s=80, ax=ax)
+    ax.legend(title="Cell type")
 
-    # Rename legend labels
-    new_labels = metadata_df["Group"].unique()
-    handles, new_labels = ax.get_legend_handles_labels()
-    ax.legend(handles=handles[0:], labels=new_labels, title="Cell type")
-
-    # Axis labels with variance explained
     ax.set_xlabel(f"PC1 ({var_explained[0]:.1f}%)")
     ax.set_ylabel(f"PC2 ({var_explained[1]:.1f}%)")
-
-    # Remove tick labels for cleaner look
     ax.set_xticks([])
     ax.set_yticks([])
 
