@@ -362,12 +362,21 @@ def retained_ccres_and_barcodes_plot(result_melted_df: pd.DataFrame) -> tuple[Fi
 
     np.random.seed(1)
     result_melted_df["x_jitter"] = result_melted_df["x"] + np.random.uniform(-0.3, 0.3, size=len(result_melted_df))
+
+    # One marker per replicate, taken from the data so the legend always matches the points
+    rep_ids = sorted(result_melted_df["rep_id"].unique(), key=int)
+    marker_cycle = ["o", "X", "s", "P", "D", "^", "v", "<", ">", "*"]
+    if len(rep_ids) > len(marker_cycle):
+        raise ValueError(f"Too many replicates to plot ({len(rep_ids)}); at most {len(marker_cycle)} are supported.")
+    rep_markers = dict(zip(rep_ids, marker_cycle))
     sns.scatterplot(
         data=result_melted_df,
         x="x_jitter",
         y="fraction",
         hue="measurement",
         style="rep_id",
+        style_order=rep_ids,
+        markers=rep_markers,
         palette=palette,
         s=90,
         ax=ax,
@@ -394,11 +403,10 @@ def retained_ccres_and_barcodes_plot(result_melted_df: pd.DataFrame) -> tuple[Fi
     ax.add_artist(legend1)
 
     rep_handles = [
-        Line2D([0], [0], marker="o", linestyle="None", color="black", markersize=14, label="1"),
-        Line2D([0], [0], marker="X", linestyle="None", color="black", markersize=14, label="2"),
-        Line2D([0], [0], marker="s", linestyle="None", color="black", markersize=14, label="3"),
+        Line2D([0], [0], marker=rep_markers[rep], linestyle="None", color="black", markersize=14, label=rep)
+        for rep in rep_ids
     ]
-    ax.legend(handles=rep_handles, title="Replicate", loc="upper left", bbox_to_anchor=(1.02, 0.77), frameon=True)
+    ax.legend(handles=rep_handles, title="Replicate", loc="upper left", bbox_to_anchor=(1.00, 0.77), frameon=True) 
     fig.tight_layout()
     return fig, ax
 

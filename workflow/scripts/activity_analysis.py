@@ -149,13 +149,19 @@ def vectorize_df_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df[cols_to_keep]
 
     def safe_eval(x: Any) -> Any:
-        if pd.isna(x):  # catches np.nan, pd.NA, None
+        if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):  # catches np.nan, pd.NA, None
             return np.nan
         try:
             return ast.literal_eval(str(x))
         except (ValueError, SyntaxError):
+            pass
+        # literal_eval cannot read "nan" (e.g. "[nan, 3.0]"), so parse a plain number list by hand
+        text = str(x).strip().strip("[]").strip()
+        try:
+            return [float(v) for v in text.split(",")] if text else []
+        except ValueError:
             return x  # fallback: return as-is if it cannot be parsed
-
+        
     return df.apply(lambda col: col.map(safe_eval))
 
 
@@ -163,22 +169,18 @@ def melt_df(df: pd.DataFrame) -> pd.DataFrame:
     results = {}
 
     for col in df.columns:
-        series = df[col]
+        arrays = [
+            np.array([]) if np.ndim(x) == 0 and pd.isna(x) else np.atleast_1d(np.asarray(x, dtype=float)) for x in df[col]
+        ]
+        arrays = [arr[~np.isnan(arr)] for arr in arrays]
 
-        # drop NAs and ensure all entries are lists
-        series = series.dropna()
-        series = pd.Series([np.asarray(x, dtype=float) for x in series], index=series.index)
+        # 1. Fraction of all cCREs with at least one non-zero barcode count
+        frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in arrays]) if arrays else np.nan
 
-        # 1. Fraction of rows with at least one non-zero
-        frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in series])
-
-        # 2. Flatten everything into one list and compute fraction non-zero
-        if len(series) > 0:
-            flat = np.concatenate([np.atleast_1d(x) for x in series.values])
-            frac_values_nonzero = np.count_nonzero(flat) / flat.size
-        else:
-            frac_values_nonzero = np.nan
-
+        # 2. Fraction of observed barcode counts that are non-zero
+        flat = np.concatenate(arrays) if arrays else np.array([])
+        frac_values_nonzero = np.count_nonzero(flat) / flat.size if flat.size > 0 else np.nan
+        
         results[col] = {
             "cCRE": frac_rows_nonzero,
             "Barcode": frac_values_nonzero,
@@ -512,11 +514,17 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
         activity_by_rep_df_vectorized = activity_by_rep_df_ds[cols_to_keep]
 
         def safe_eval(x):
-            if pd.isna(x):  # catches np.nan, pd.NA, None
+            if not isinstance(x, (list, tuple, np.ndarray)) and pd.isna(x):  # catches np.nan, pd.NA, None
                 return np.nan
             try:
                 return ast.literal_eval(str(x))
             except (ValueError, SyntaxError):
+                pass
+            # literal_eval cannot read "nan" (e.g. "[nan, 3.0]"), so parse a plain number list by hand
+            text = str(x).strip().strip("[]").strip()
+            try:
+                return [float(v) for v in text.split(",")] if text else []
+            except ValueError:
                 return x  # fallback: return as-is if it cannot be parsed
 
         activity_by_rep_df_vectorized = activity_by_rep_df_vectorized.map(safe_eval)
@@ -525,20 +533,20 @@ def downsampling_preprocessing(ds_ratio_path: str) -> tuple[pd.DataFrame, pd.Dat
 
         for col in activity_by_rep_df_vectorized.columns:
             # print(col)
-            series = activity_by_rep_df_vectorized[col]
+            # A blank cell means the cCRE was not observed in this replicate: it stays in the
+            # denominator and counts as not retained. NaN counts inside a list are treated as missing.
+            arrays = [
+                np.array([]) if np.ndim(x) == 0 and pd.isna(x) else np.atleast_1d(np.asarray(x, dtype=float))
+                for x in activity_by_rep_df_vectorized[col]
+            ]
+            arrays = [arr[~np.isnan(arr)] for arr in arrays]
 
-            # drop NAs and ensure all entries are lists
-            series = series.dropna()
-            series = pd.Series([np.asarray(x, dtype=float) for x in series], index=series.index)
-            # 1. Fraction of rows with at least one non-zero
-            frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in series])
+            # 1. Fraction of all cCREs with at least one non-zero barcode count
+            frac_rows_nonzero = np.mean([np.any(arr != 0) for arr in arrays]) if arrays else np.nan
 
-            # 2. Flatten everything into one list and compute fraction non-zero
-            if len(series) > 0:
-                flat = np.concatenate([np.atleast_1d(x) for x in series.values])
-                frac_values_nonzero = np.count_nonzero(flat) / flat.size
-            else:
-                frac_values_nonzero = np.nan
+            # 2. Fraction of observed barcode counts that are non-zero
+            flat = np.concatenate(arrays) if arrays else np.array([])
+            frac_values_nonzero = np.count_nonzero(flat) / flat.size if flat.size > 0 else np.nan
 
             results[col] = {
                 "cCRE": frac_rows_nonzero,
