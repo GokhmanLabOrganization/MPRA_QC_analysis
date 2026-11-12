@@ -150,13 +150,15 @@ The key file for the activity analysis. Each row represents a cCRE and its activ
 
 ### `activity_per_rep`
 
-RNA and DNA count data for each cCRE, reported per replicate and combined. The replicate index `{i}` expands to one set of columns per replicate.
+Barcode-level RNA and DNA counts for each cCRE, reported per replicate. The replicate index `{i}` expands to one set of columns per replicate.
+
+Each RNA/DNA count cell holds a **list with one entry per barcode** of that cCRE, not a per-cCRE total. A file with a single total per cell is not valid and gives misleading QC plots. Counts may be written as integers or as whole-number floats (`3` or `3.0`). A blank cell means the cCRE was not detected in that replicate, and it is counted as not retained.
 
 | Column | Type | Description |
 |---|---|---|
 | `cCRE` | `str` | cCRE identifier |
-| `RNA_rep{i}` | `object` | RNA counts for replicate `{i}` (comma-separated list of integers) |
-| `DNA_rep{i}` | `object` | DNA counts for replicate `{i}` (comma-separated list of integers) |
+| `RNA_rep{i}` | `object` | RNA count of each barcode in replicate `{i}`, as a bracketed list, e.g. `[3.0, 0.0, 5.0]` |
+| `DNA_rep{i}` | `object` | DNA count of each barcode in replicate `{i}`, as a bracketed list, e.g. `[2.0, 1.0, 4.0]` |
 | `RNA_DNA_ratio_log_rep{i}` | `float64` | log2(RNA/DNA) for replicate `{i}` |
 
 ### `std_analysis_df`
